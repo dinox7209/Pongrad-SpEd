@@ -58,14 +58,14 @@ const TEMPLATE_OPTIONS: {
     label: "3. แผ่นแสดงผลงาน Portfolio",
     desc: "รวมภาพผลงานนักเรียนจาก Google Drive พร้อมคำบรรยายทักษะ",
     defaultMediaType: "portfolio",
-    defaultPublic: true,
+    defaultPublic: false,
   },
   {
     id: "newsletter",
     label: "4. วารสารประจำสัปดาห์",
-    desc: "วารสารข่าวประชาสัมพันธ์ A4 เผยแพร่บน /showcase ทันที",
+    desc: "วารสารข่าวประชาสัมพันธ์ A4 (เลือกเปิดเผยแพร่บน /showcase ได้)",
     defaultMediaType: "newsletter",
-    defaultPublic: true,
+    defaultPublic: false,
   },
 ];
 
@@ -137,7 +137,9 @@ function GeneratorContent() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    setTeacherName(profile?.display_name || "ครูเอก (ครูการศึกษาพิเศษ)");
+    setTeacherName(
+      profile?.display_name || "คณะทำงานห้องเรียนเสริมวิชาการสู่การเรียนรวม"
+    );
   }, [profile]);
 
   useEffect(() => {

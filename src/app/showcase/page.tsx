@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase/client";
-import { getDemoMedia } from "@/lib/demo-store";
+import { getDemoMedia, getDemoProfiles } from "@/lib/demo-store";
 import {
   formatDateThai,
   getMediaStreamUrl,
@@ -13,23 +13,30 @@ import {
 import {
   GRADE_LEVELS,
   MediaAsset,
+  PublicTeamMember,
   SCHOOL_INFO,
   SKILL_CATEGORIES,
 } from "@/types/database";
 import {
   BookOpen,
+  Building2,
   Download,
   ExternalLink,
   FileText,
   Filter,
   Film,
   GraduationCap,
+  Handshake,
   Image as ImageIcon,
+  MapPin,
   Newspaper,
+  Phone,
   Play,
+  School,
   Search,
   ShieldCheck,
   Sparkles,
+  UserCheck,
   X,
 } from "lucide-react";
 
@@ -46,6 +53,7 @@ function resolvePdfPreviewSrc(asset: MediaAsset): string {
 export default function PublicShowcasePage() {
   const { isConfigured, isAdmin } = useAuth();
   const [assets, setAssets] = useState<MediaAsset[]>([]);
+  const [publicTeam, setPublicTeam] = useState<PublicTeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,23 +73,49 @@ export default function PublicShowcasePage() {
       setLoading(true);
       try {
         if (isConfigured) {
-          const { data, error } = await supabase
-            .from("media_assets")
-            .select("*")
-            .eq("is_public", true)
-            .order("created_at", { ascending: false });
+          // ดึงเฉพาะสื่อที่เปิดเผยแพร่สาธารณะ (is_public = true) และไม่ดึงข้อมูลนักเรียน/ครูส่วนตัว
+          const [mediaRes, teamRes] = await Promise.all([
+            supabase
+              .from("media_assets")
+              .select(
+                "id, title, description, media_type, drive_file_id, drive_view_url, is_public, skill_category, grade_level, week_number, mime_type, created_at"
+              )
+              .eq("is_public", true)
+              .order("created_at", { ascending: false }),
+            supabase
+              .from("public_team_profiles")
+              .select("id, display_name, position, affiliation"),
+          ]);
 
-          if (!error && data) {
-            setAssets(data as MediaAsset[]);
+          if (!mediaRes.error && mediaRes.data) {
+            setAssets(mediaRes.data as MediaAsset[]);
           } else {
             setAssets(getDemoMedia().filter((m) => m.is_public));
           }
+
+          if (!teamRes.error && teamRes.data) {
+            setPublicTeam(teamRes.data as PublicTeamMember[]);
+          } else {
+            setPublicTeam([]);
+          }
         } else {
           setAssets(getDemoMedia().filter((m) => m.is_public));
+          // ในโหมดทดลอง: แสดงบุคลากรเฉพาะเมื่อผู้ดูแลเปิด is_public = true เท่านั้น (ค่าเริ่มต้นเป็น false)
+          setPublicTeam(
+            getDemoProfiles()
+              .filter((p) => Boolean(p.is_public))
+              .map((p) => ({
+                id: p.id,
+                display_name: p.display_name,
+                position: p.position,
+                affiliation: p.affiliation,
+              }))
+          );
         }
       } catch (err) {
         console.error("Failed to load showcase media:", err);
         setAssets(getDemoMedia().filter((m) => m.is_public));
+        setPublicTeam([]);
       } finally {
         setLoading(false);
       }
@@ -139,13 +173,15 @@ export default function PublicShowcasePage() {
           <div className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md text-pink-100 text-xs font-semibold border border-white/25">
               <Sparkles className="w-3.5 h-3.5 text-pink-200" />
-              <span>พื้นที่เผยแพร่ผลงานสาธารณะ (เปิดดูได้ทันทีไม่ต้องเข้าสู่ระบบ)</span>
+              <span>
+                ความร่วมมือระหว่าง {SCHOOL_INFO.name} × {SCHOOL_INFO.partnerName}
+              </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight drop-shadow-sm">
-              วารสารข่าวและคลังผลงานนักเรียนการศึกษาพิเศษ
+              {SCHOOL_INFO.projectName}
             </h1>
-            <p className="text-purple-100/90 text-sm sm:text-base leading-relaxed">
-              {SCHOOL_INFO.name} • {SCHOOL_INFO.area} — รวมสื่อการเรียนรู้ คลิปวิดีโอสั้นพัฒนาทักษะ และวารสารข่าวประจำสัปดาห์สำหรับผู้ปกครองและชุมชน
+            <p className="text-purple-100/95 text-sm sm:text-base leading-relaxed">
+              {SCHOOL_INFO.cooperationDescription}
             </p>
           </div>
 
@@ -166,11 +202,136 @@ export default function PublicShowcasePage() {
               <div className="text-2xl font-extrabold text-white">
                 {imageCount}
               </div>
-              <div className="text-[11px] text-pink-100 mt-0.5">ภาพผลงาน</div>
+              <div className="text-[11px] text-pink-100 mt-0.5">สื่อและกิจกรรม</div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Section: Cooperation & Partner Agencies Contact */}
+      <section className="space-y-4">
+        <div className="space-y-1.5">
+          <h2 className="text-xl font-bold text-navy-950 flex items-center gap-2">
+            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-glass-pink">
+              <Handshake className="w-4 h-4" />
+            </span>
+            <span>ความร่วมมือระหว่างสองหน่วยงานและข้อมูลติดต่อ</span>
+          </h2>
+          <div className="heading-beam-track" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="liquid-glass running-line-bottom rounded-3xl p-5 sm:p-6 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-600 to-fuchsia-500 text-white flex items-center justify-center shadow-glass-pink shrink-0">
+                <School className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="inline-flex px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[11px] font-bold mb-1">
+                  สถานศึกษาแกนนำเรียนรวม
+                </span>
+                <h3 className="font-bold text-navy-950 text-base">
+                  {SCHOOL_INFO.name}
+                </h3>
+                <p className="text-xs text-purple-800/80">
+                  สังกัด {SCHOOL_INFO.fullArea}
+                </p>
+              </div>
+            </div>
+            <div className="space-y-1.5 text-xs sm:text-sm text-purple-950/80 pt-2 border-t border-purple-200/50">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
+                <span>ตั้งอยู่ที่ {SCHOOL_INFO.address}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-purple-600 shrink-0" />
+                <a
+                  href={`tel:${SCHOOL_INFO.phone.replace(/-/g, "")}`}
+                  className="font-semibold text-pink-700 hover:underline"
+                >
+                  โทรศัพท์ {SCHOOL_INFO.phone}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="liquid-glass running-line-bottom rounded-3xl p-5 sm:p-6 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-fuchsia-600 to-pink-500 text-white flex items-center justify-center shadow-glass-pink shrink-0">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="inline-flex px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-800 text-[11px] font-bold mb-1">
+                  หน่วยงานความร่วมมือด้านการศึกษาพิเศษ
+                </span>
+                <h3 className="font-bold text-navy-950 text-base">
+                  {SCHOOL_INFO.partnerName}
+                </h3>
+                <p className="text-xs text-purple-800/80">
+                  สนับสนุนวิชาการและส่งเสริมศักยภาพผู้เรียนเรียนรวม
+                </p>
+              </div>
+            </div>
+            <div className="space-y-1.5 text-xs sm:text-sm text-purple-950/80 pt-2 border-t border-purple-200/50">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
+                <span>ตั้งอยู่ที่ {SCHOOL_INFO.partnerAddress}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-purple-600 shrink-0" />
+                <a
+                  href={`tel:${SCHOOL_INFO.partnerPhone.replace(/-/g, "")}`}
+                  className="font-semibold text-pink-700 hover:underline"
+                >
+                  โทรศัพท์ {SCHOOL_INFO.partnerPhone}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* แสดงรายชื่อบุคลากรเฉพาะเมื่อผู้ดูแลตั้งค่าเปิดเผยแพร่สาธารณะ (is_public = true) เท่านั้น */}
+      {publicTeam.length > 0 && (
+        <section className="space-y-4">
+          <div className="space-y-1.5">
+            <h2 className="text-xl font-bold text-navy-950 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-glass-pink">
+                <UserCheck className="w-4 h-4" />
+              </span>
+              <span>บุคลากรผู้รับผิดชอบ (ที่เปิดเผยแพร่สาธารณะ)</span>
+            </h2>
+            <div className="heading-beam-track" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {publicTeam.map((member) => (
+              <div
+                key={member.id}
+                className="liquid-glass rounded-3xl p-5 flex items-start gap-3"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shrink-0">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-bold text-navy-950 text-base">
+                    {member.display_name}
+                  </div>
+                  {member.position && (
+                    <div className="text-xs font-semibold text-pink-700">
+                      {member.position}
+                    </div>
+                  )}
+                  {member.affiliation && (
+                    <div className="text-xs text-purple-900/75 mt-0.5">
+                      สังกัด {member.affiliation}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Section 1: Weekly Newsletters */}
       <section className="space-y-5">
@@ -180,7 +341,7 @@ export default function PublicShowcasePage() {
               <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-glass-pink">
                 <Newspaper className="w-4 h-4" />
               </span>
-              <span>วารสารข่าวการศึกษาพิเศษประจำสัปดาห์</span>
+              <span>วารสารข่าวห้องเรียนเสริมวิชาการประจำสัปดาห์</span>
             </h2>
             <div className="heading-beam-track" />
             <p className="text-xs sm:text-sm text-purple-900/70 pt-0.5">
@@ -277,11 +438,11 @@ export default function PublicShowcasePage() {
             <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white flex items-center justify-center shadow-glass-pink">
               <Film className="w-4 h-4" />
             </span>
-            <span>แกลเลอรีคลิปวิดีโอสั้นและผลงานนักเรียน</span>
+            <span>แกลเลอรีคลิปวิดีโอสั้นและสื่อกิจกรรม</span>
           </h2>
           <div className="heading-beam-track" />
           <p className="text-xs sm:text-sm text-purple-900/70 pt-0.5">
-            รวมคลิปวิดีโอกิจกรรม สื่อการเรียนรู้ และผลงานเด่นของนักเรียนสำหรับผู้ปกครองและผู้สนใจ
+            รวมคลิปวิดีโอกิจกรรม สื่อการเรียนรู้ และผลงานเด่นที่ได้รับอนุญาตให้เผยแพร่สำหรับผู้ปกครองและผู้สนใจ
           </p>
         </div>
 
@@ -335,7 +496,7 @@ export default function PublicShowcasePage() {
               [
                 { id: "all", label: "ทั้งหมด" },
                 { id: "video", label: "วิดีโอ" },
-                { id: "image", label: "ภาพผลงาน" },
+                { id: "image", label: "ภาพสื่อ" },
                 { id: "pdf", label: "PDF" },
               ] as const
             ).map((tab) => (
@@ -368,7 +529,7 @@ export default function PublicShowcasePage() {
         ) : galleryAssets.length === 0 ? (
           <div className="liquid-glass rounded-3xl p-12 text-center space-y-2">
             <p className="font-semibold text-navy-900 text-sm">
-              ไม่พบผลงานที่ตรงกับตัวกรองที่เลือก
+              ไม่พบสื่อหรือผลงานที่ตรงกับตัวกรองที่เลือก
             </p>
             <button
               type="button"
@@ -445,7 +606,7 @@ export default function PublicShowcasePage() {
                             ? "วิดีโอสั้น"
                             : isPdf
                             ? "เอกสาร PDF"
-                            : "ภาพผลงาน"}
+                            : "ภาพสื่อ/กิจกรรม"}
                         </span>
                       </span>
                     </div>
@@ -494,7 +655,7 @@ export default function PublicShowcasePage() {
         )}
       </section>
 
-      {/* Bottom Admin Callout */}
+      {/* Bottom Admin Callout (ไม่เปิดเผยชื่อเจ้าหน้าที่บนหน้าสาธารณะ) */}
       <div className="liquid-glass-hero running-line-bottom rounded-3xl text-white p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-pink-200 shrink-0">
@@ -502,10 +663,10 @@ export default function PublicShowcasePage() {
           </div>
           <div>
             <div className="font-bold text-sm">
-              สำหรับครูผู้สอนและผู้ดูแลระบบการศึกษาพิเศษ (2 ท่าน)
+              สำหรับเจ้าหน้าที่ผู้รับผิดชอบ ({SCHOOL_INFO.projectName})
             </div>
             <div className="text-xs text-purple-100/85">
-              เข้าสู่ระบบเพื่อจัดการทะเบียนนักเรียน บันทึก Case Timeline สร้างเอกสาร A4 และตัดต่อคลิปขึ้น Google Drive
+              เข้าสู่ระบบหลังบ้านเพื่อจัดการทะเบียนนักเรียน บันทึก Case Timeline สร้างเอกสาร A4 และจัดการสื่อการสอน
             </div>
           </div>
         </div>
@@ -513,7 +674,7 @@ export default function PublicShowcasePage() {
           href={isAdmin ? "/admin" : "/login"}
           className="px-5 py-2.5 rounded-full bg-white text-purple-900 hover:bg-pink-50 text-xs font-bold shrink-0 shadow-glass-pink transition-colors"
         >
-          {isAdmin ? "เข้าสู่แดชบอร์ดหลังบ้าน" : "เข้าสู่ระบบผู้ดูแล"}
+          {isAdmin ? "เข้าสู่แดชบอร์ดหลังบ้าน" : "เข้าสู่ระบบเจ้าหน้าที่"}
         </Link>
       </div>
 
@@ -591,7 +752,7 @@ export default function PublicShowcasePage() {
                       ตัวอย่างคลิปวิดีโอ 720p (Demo Mode)
                     </div>
                     <p className="text-xs text-pink-100 max-w-md mx-auto">
-                      เมื่อเชื่อมต่อ Google Service Account และอัปโหลดหรือตัดต่อคลิปในหน้า /admin/studio วิดีโอ MP4 720p จะสตรีมผ่าน Google Drive API มาเล่นในเครื่องเล่นนี้โดยตรง
+                      เมื่อเชื่อมต่อ Google Service Account และอัปโหลดหรือตัดต่อคลิปในระบบหลังบ้าน วิดีโอ MP4 720p จะสตรีมผ่าน Google Drive API มาเล่นในเครื่องเล่นนี้โดยตรง
                     </p>
                   </div>
                 ) : (

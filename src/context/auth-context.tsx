@@ -10,6 +10,7 @@ interface AuthContextType {
   profile: Profile | null;
   isLoading: boolean;
   isAdmin: boolean;
+  isPrimaryAdmin: boolean;
   isConfigured: boolean;
   isSchemaReady: boolean;
   isDemoAdmin: boolean;
@@ -17,6 +18,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   enterDemoAdmin: (adminNumber?: 1 | 2) => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const DEMO_ADMIN_STORAGE_KEY = "pongrad_sped_demo_admin";
@@ -32,6 +34,31 @@ function translateAuthError(message: string): string {
     return "บัญชีนี้ยังไม่ได้รับการยืนยันอีเมล กรุณาตรวจสอบ Auth ใน Supabase";
   }
   return message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
+}
+
+function buildDemoProfile(adminNumber: 1 | 2): Profile {
+  if (adminNumber === 1) {
+    return {
+      id: "00000000-0000-0000-0001-000000000001",
+      email: "wadpongradschool@gmail.com",
+      display_name: "นายเอกชัย ปลื้มใจ",
+      role: "super_admin",
+      position: "ครูพี่เลี้ยงเด็กพิเศษ",
+      affiliation: "สำนักงานเขตพื้นที่การศึกษาประถมศึกษาจันทบุรี เขต 1",
+      is_public: false,
+      created_at: new Date().toISOString(),
+    };
+  }
+  return {
+    id: "00000000-0000-0000-0001-000000000002",
+    email: "duangporn.sped@pongrad.ac.th",
+    display_name: "นางสาวดวงพร หวังอ้อมกลาง",
+    role: "admin",
+    position: "ครูชำนาญการ (ข้าราชการครู)",
+    affiliation: "ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี",
+    is_public: false,
+    created_at: new Date().toISOString(),
+  };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -83,13 +110,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           id: currentUser.id,
           email: currentUser.email || null,
           display_name: meta.display_name || currentUser.email || "ผู้ดูแลระบบ",
-          role: "admin",
+          role: meta.role === "super_admin" ? "super_admin" : "admin",
+          position: meta.position || null,
+          affiliation: meta.affiliation || null,
+          is_public: false,
           created_at: currentUser.created_at || new Date().toISOString(),
         });
       }
     },
     [isConfigured]
   );
+
+  const refreshProfile = useCallback(async () => {
+    if (user) {
+      await fetchProfile(user);
+    }
+  }, [user, fetchProfile]);
 
   useEffect(() => {
     let active = true;
@@ -100,20 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const savedDemo = localStorage.getItem(DEMO_ADMIN_STORAGE_KEY);
           if (savedDemo === "1" || savedDemo === "2") {
             setIsDemoAdmin(true);
-            setProfile({
-              id: `demo-admin-${savedDemo}`,
-              email:
-                savedDemo === "1"
-                  ? "wadpongradschool@gmail.com"
-                  : "sped2@pongrad.ac.th",
-              display_name:
-                savedDemo === "1"
-                  ? "ครูเอก (ผู้ดูแลคนที่ 1 • Demo)"
-                  : "ครูผู้ช่วยการศึกษาพิเศษ (ผู้ดูแลคนที่ 2 • Demo)",
-              role: "admin",
-              position: "ครูการศึกษาพิเศษ",
-              created_at: new Date().toISOString(),
-            });
+            setProfile(buildDemoProfile(savedDemo === "1" ? 1 : 2));
           }
         }
         setIsSchemaReady(false);
@@ -161,7 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     if (!isConfigured) {
       return {
-        error: new Error("ยังไม่ได้เชื่อมต่อ Supabase กรุณาใช้ปุ่มเข้าสู่โหมดทดลอง (Demo)"),
+        error: new Error("ยังไม่ได้เชื่อมต่อ Supabase กรุณาใช้ปุ่มเข้าสู่โหมดทดลอง"),
       };
     }
 
@@ -188,18 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(DEMO_ADMIN_STORAGE_KEY, String(adminNumber));
     }
     setIsDemoAdmin(true);
-    setProfile({
-      id: `demo-admin-${adminNumber}`,
-      email:
-        adminNumber === 1 ? "wadpongradschool@gmail.com" : "sped2@pongrad.ac.th",
-      display_name:
-        adminNumber === 1
-          ? "ครูเอก (ผู้ดูแลคนที่ 1 • Demo)"
-          : "ครูผู้ช่วยการศึกษาพิเศษ (ผู้ดูแลคนที่ 2 • Demo)",
-      role: "admin",
-      position: "ครูการศึกษาพิเศษ",
-      created_at: new Date().toISOString(),
-    });
+    setProfile(buildDemoProfile(adminNumber));
   };
 
   const signOut = async () => {
@@ -218,8 +230,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const isAdmin = isConfigured
-    ? Boolean(user && (!profile || profile.role === "admin" || profile.role === "director"))
+    ? Boolean(
+        user &&
+          (!profile ||
+            profile.role === "super_admin" ||
+            profile.role === "admin" ||
+            profile.role === "director")
+      )
     : isDemoAdmin;
+
+  const isPrimaryAdmin = Boolean(isAdmin && profile?.role === "super_admin");
 
   return (
     <AuthContext.Provider
@@ -228,6 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile,
         isLoading,
         isAdmin,
+        isPrimaryAdmin,
         isConfigured,
         isSchemaReady,
         isDemoAdmin,
@@ -235,6 +256,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signOut,
         enterDemoAdmin,
+        refreshProfile,
       }}
     >
       {children}

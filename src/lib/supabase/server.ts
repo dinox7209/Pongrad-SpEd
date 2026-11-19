@@ -82,7 +82,9 @@ export async function getAuthenticatedAdmin() {
     .maybeSingle();
 
   const isAllowedRole =
-    profile?.role === "admin" || profile?.role === "director";
+    profile?.role === "super_admin" ||
+    profile?.role === "admin" ||
+    profile?.role === "director";
 
   if (!profile || !isAllowedRole) {
     return { user: null, profile: null, isDemoMode: false };

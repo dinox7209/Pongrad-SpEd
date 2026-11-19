@@ -168,7 +168,7 @@ export function VideoEditorPanel({
   const [gradeLevel, setGradeLevel] = useState<string>("ทุกระดับชั้น");
   const [studentId, setStudentId] = useState<string>("");
   const [weekNumber, setWeekNumber] = useState<string>("");
-  const [isPublic, setIsPublic] = useState<boolean>(true);
+  const [isPublic, setIsPublic] = useState<boolean>(false);
   const [linkToWeek, setLinkToWeek] = useState<boolean>(false);
 
   const [processing, setProcessing] = useState(false);
@@ -529,7 +529,7 @@ export function VideoEditorPanel({
                   <input
                     value={captionText}
                     onChange={(e) => setCaptionText(e.target.value)}
-                    placeholder="เช่น น้องต้นกล้า ฝึกทักษะกล้ามเนื้อมัดเล็ก ป.2"
+                    placeholder="เช่น กิจกรรมฝึกทักษะกล้ามเนื้อมัดเล็ก Resource Room"
                     className="sm:col-span-2 px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white"
                   />
                   <select

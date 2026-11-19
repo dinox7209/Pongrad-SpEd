@@ -337,9 +337,9 @@ export function SpEdPdfDocument({ payload }: { payload: SpEdPdfPayload }) {
         <Page size="A4" style={styles.page}>
           <View style={styles.coverFrame}>
             <View style={styles.coverBanner}>
-              <Text style={styles.coverSchool}>{SCHOOL_INFO.name}</Text>
+              <Text style={styles.coverSchool}>{SCHOOL_INFO.projectName}</Text>
               <Text style={styles.coverArea}>
-                {SCHOOL_INFO.unitName} • {SCHOOL_INFO.area}
+                {SCHOOL_INFO.name} ({SCHOOL_INFO.area}) × {SCHOOL_INFO.partnerName}
               </Text>
             </View>
 
@@ -395,9 +395,9 @@ export function SpEdPdfDocument({ payload }: { payload: SpEdPdfPayload }) {
               </View>
               <View style={{ alignItems: "flex-end" }}>
                 <Text style={styles.label}>เสนอ</Text>
-                <Text style={styles.value}>{SCHOOL_INFO.directorName}</Text>
+                <Text style={styles.value}>ผู้อำนวยการสถานศึกษา</Text>
                 <Text style={{ fontSize: 8.5, color: "#486581" }}>
-                  {SCHOOL_INFO.directorPosition}
+                  {SCHOOL_INFO.name}
                 </Text>
               </View>
             </View>
@@ -551,15 +551,15 @@ export function SpEdPdfDocument({ payload }: { payload: SpEdPdfPayload }) {
             <View style={styles.signBox}>
               <Text>ลงชื่อ .............................................</Text>
               <Text style={{ marginTop: 4, fontWeight: "bold" }}>({teacherName})</Text>
-              <Text style={{ fontSize: 8.5, color: "#486581" }}>ครูผู้สอนการศึกษาพิเศษ</Text>
+              <Text style={{ fontSize: 8.5, color: "#486581" }}>ผู้จัดทำและรับผิดชอบ</Text>
             </View>
             <View style={styles.signBox}>
               <Text>ลงชื่อ .............................................</Text>
               <Text style={{ marginTop: 4, fontWeight: "bold" }}>
-                ({SCHOOL_INFO.directorName})
+                (.............................................)
               </Text>
               <Text style={{ fontSize: 8.5, color: "#486581" }}>
-                {SCHOOL_INFO.directorPosition}
+                ผู้อำนวยการ{SCHOOL_INFO.name}
               </Text>
             </View>
           </View>
@@ -667,15 +667,15 @@ export function SpEdPdfDocument({ payload }: { payload: SpEdPdfPayload }) {
           <View style={styles.signBox}>
             <Text>ลงชื่อ .............................................</Text>
             <Text style={{ marginTop: 4, fontWeight: "bold" }}>({teacherName})</Text>
-            <Text style={{ fontSize: 8.5, color: "#486581" }}>ครูผู้รายงาน</Text>
+            <Text style={{ fontSize: 8.5, color: "#486581" }}>ผู้รายงาน</Text>
           </View>
           <View style={styles.signBox}>
             <Text>ลงชื่อ .............................................</Text>
             <Text style={{ marginTop: 4, fontWeight: "bold" }}>
-              ({SCHOOL_INFO.directorName})
+              (.............................................)
             </Text>
             <Text style={{ fontSize: 8.5, color: "#486581" }}>
-              {SCHOOL_INFO.directorPosition}
+              ผู้อำนวยการ{SCHOOL_INFO.name}
             </Text>
           </View>
         </View>

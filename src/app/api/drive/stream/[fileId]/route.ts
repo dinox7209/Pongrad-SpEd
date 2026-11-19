@@ -21,7 +21,7 @@ function buildDemoSvg(label: string, subtitle: string, bg: string, accent: strin
   <circle cx="690" cy="110" r="85" fill="rgba(255,255,255,0.12)"/>
   <circle cx="110" cy="400" r="110" fill="rgba(255,255,255,0.10)"/>
   <rect x="64" y="64" width="672" height="372" rx="20" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.28)" stroke-width="2"/>
-  <text x="104" y="155" fill="#bfdbfe" font-family="sans-serif" font-size="22" font-weight="600">โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร) • การศึกษาพิเศษ</text>
+  <text x="104" y="155" fill="#bfdbfe" font-family="sans-serif" font-size="20" font-weight="600">ห้องเรียนเสริมวิชาการ (Resource Room) • รร.วัดโป่งแรดฯ × ศูนย์การศึกษาพิเศษฯ</text>
   <text x="104" y="235" fill="#ffffff" font-family="sans-serif" font-size="38" font-weight="700">${label}</text>
   <text x="104" y="295" fill="#e0f2fe" font-family="sans-serif" font-size="22">${subtitle}</text>
   <rect x="104" y="340" width="260" height="44" rx="22" fill="rgba(255,255,255,0.22)"/>

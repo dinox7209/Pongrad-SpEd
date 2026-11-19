@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "director" | "teacher";
+export type UserRole = "super_admin" | "admin" | "director" | "teacher";
 
 export type StudentStatus =
   | "Active"
@@ -31,8 +31,17 @@ export interface Profile {
   display_name: string;
   role: UserRole;
   position?: string | null;
+  affiliation?: string | null;
+  is_public?: boolean;
   created_at: string;
   updated_at?: string;
+}
+
+export interface PublicTeamMember {
+  id: string;
+  display_name: string;
+  position?: string | null;
+  affiliation?: string | null;
 }
 
 export interface Student {
@@ -47,6 +56,7 @@ export interface Student {
   iep_goal?: string | null;
   profile_image_drive_id?: string | null;
   notes?: string | null;
+  is_public?: boolean;
   created_by?: string | null;
   created_at: string;
   updated_at: string;
@@ -179,9 +189,16 @@ export const LOG_TYPES: LogType[] = [
 ];
 
 export const SCHOOL_INFO = {
+  projectName: "ห้องเรียนเสริมวิชาการสู่การเรียนรวม (Resource Room)",
   name: "โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร)",
   area: "สพป.จันทบุรี เขต 1",
-  unitName: "ศูนย์ส่งเสริมการจัดการเรียนรวมและศึกษาพิเศษ",
-  directorName: "นางสาวอำพร คงเจริญ",
-  directorPosition: "ผู้อำนวยการโรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร)",
+  fullArea: "สำนักงานเขตพื้นที่การศึกษาประถมศึกษาจันทบุรี เขต 1",
+  address: "ตำบลพลับพลา อำเภอเมืองจันทบุรี จังหวัดจันทบุรี 22000",
+  phone: "087-914-4076",
+  partnerName: "ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี",
+  partnerAddress: "58/22 หมู่ที่ 7 ตำบลท่าช้าง อำเภอเมืองจันทบุรี จังหวัดจันทบุรี 22000",
+  partnerPhone: "039-480-270",
+  unitName: "ห้องเรียนเสริมวิชาการสู่การเรียนรวม (Resource Room)",
+  cooperationDescription:
+    "โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร) ได้จัดทำ ห้องเรียนเสริมวิชาการสู่การเรียนรวม (Resource Room) ร่วมกับศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี เพื่อดูแลและส่งเสริมศักยภาพนักเรียนที่มีความต้องการจำเป็นพิเศษในโรงเรียนเรียนรวมอย่างต่อเนื่อง",
 };

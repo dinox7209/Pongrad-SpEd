@@ -45,6 +45,7 @@ interface StudentFormState {
   guardian_contact: string;
   iep_goal: string;
   notes: string;
+  is_public: boolean;
 }
 
 const EMPTY_FORM: StudentFormState = {
@@ -57,6 +58,7 @@ const EMPTY_FORM: StudentFormState = {
   guardian_contact: "",
   iep_goal: "",
   notes: "",
+  is_public: false,
 };
 
 export default function StudentsPage() {
@@ -118,7 +120,7 @@ export default function StudentsPage() {
   }, [students, searchQuery, filterStatus, filterGrade, filterDisability]);
 
   const openCreateModal = () => {
-    const nextCode = `SP69-${String(students.length + 1).padStart(3, "0")}`;
+    const nextCode = `RR69-${String(students.length + 1).padStart(3, "0")}`;
     setForm({ ...EMPTY_FORM, student_code: nextCode });
     setErrorMsg("");
     setModalOpen(true);
@@ -136,6 +138,7 @@ export default function StudentsPage() {
       guardian_contact: student.guardian_contact,
       iep_goal: student.iep_goal || "",
       notes: student.notes || "",
+      is_public: Boolean(student.is_public),
     });
     setErrorMsg("");
     setModalOpen(true);
@@ -161,6 +164,7 @@ export default function StudentsPage() {
               guardian_contact: form.guardian_contact.trim(),
               iep_goal: form.iep_goal.trim(),
               notes: form.notes.trim(),
+              is_public: form.is_public,
             })
             .eq("id", form.id)
             .select("*")
@@ -183,6 +187,7 @@ export default function StudentsPage() {
               guardian_contact: form.guardian_contact.trim(),
               iep_goal: form.iep_goal.trim(),
               notes: form.notes.trim(),
+              is_public: form.is_public,
               created_by: user?.id || null,
             })
             .select("*")
@@ -216,6 +221,7 @@ export default function StudentsPage() {
             guardian_contact: form.guardian_contact.trim(),
             iep_goal: form.iep_goal.trim(),
             notes: form.notes.trim(),
+            is_public: form.is_public,
             created_at: now,
             updated_at: now,
           };
@@ -544,7 +550,7 @@ export default function StudentsPage() {
                       setForm({ ...form, student_code: e.target.value })
                     }
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm"
-                    placeholder="SP69-001"
+                    placeholder="RR69-001"
                   />
                 </div>
                 <div>
@@ -558,7 +564,7 @@ export default function StudentsPage() {
                       setForm({ ...form, nickname: e.target.value })
                     }
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm"
-                    placeholder="น้องต้นกล้า"
+                    placeholder="เช่น ผู้เรียน 01"
                   />
                 </div>
               </div>
@@ -574,7 +580,7 @@ export default function StudentsPage() {
                     setForm({ ...form, full_name: e.target.value })
                   }
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm"
-                  placeholder="เด็กชายต้นกล้า รักเรียนดี"
+                  placeholder="ชื่อ-นามสกุลนักเรียน (แสดงเฉพาะในระบบหลังบ้าน)"
                 />
               </div>
 
@@ -681,6 +687,21 @@ export default function StudentsPage() {
                   placeholder="ความสนใจพิเศษ สิ่งกระตุ้น หรือข้อควรระวัง..."
                 />
               </div>
+
+              <label className="flex items-start gap-2.5 p-3 rounded-2xl bg-purple-50/80 border border-purple-200 text-xs text-purple-950 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.is_public}
+                  onChange={(e) =>
+                    setForm({ ...form, is_public: e.target.checked })
+                  }
+                  className="mt-0.5"
+                />
+                <span>
+                  <strong>ได้รับความยินยอมเผยแพร่ผลงาน (ปิดเป็นค่าเริ่มต้น):</strong>{" "}
+                  รายชื่อและข้อมูลประวัตินักเรียนจะไม่แสดงบนหน้าสาธารณะตลอดเวลา ใช้บันทึกสิทธิ์ยินยอมประกอบการเผยแพร่ภาพ/คลิปในแกลเลอรีเท่านั้น
+                </span>
+              </label>
 
               <div className="pt-3 flex items-center justify-end gap-2">
                 <button

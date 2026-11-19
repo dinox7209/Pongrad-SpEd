@@ -1,7 +1,8 @@
 -- ==============================================================================
--- ระบบจัดการสื่อการสอนและติดตามนักเรียนการศึกษาพิเศษ (Pongrad SpEd)
--- โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร) สพป.จันทบุรี เขต 1
--- Supabase PostgreSQL Schema + Seed 2 Admin Accounts + 20 Weekly Tasks + RLS
+-- ห้องเรียนเสริมวิชาการสู่การเรียนรวม (Resource Room)
+-- ความร่วมมือระหว่าง โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร) (สพป.จันทบุรี เขต 1)
+-- และ ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี
+-- Supabase PostgreSQL Schema + Seed 2 Admins + 20 Weekly Tasks + Strict Privacy RLS
 -- ==============================================================================
 
 -- 1. Extensions
@@ -9,18 +10,27 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA extensions;
 
 -- 2. Tables
 
--- 2.1 profiles (บัญชีผู้ใช้งานหลังบ้าน 2 ท่าน)
+-- 2.1 profiles (บัญชีผู้ใช้งานหลังบ้าน 2 ท่าน — ซ่อนสาธารณะเป็นค่าเริ่มต้น)
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT,
     display_name TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('admin', 'director', 'teacher')),
-    position TEXT DEFAULT 'ครูการศึกษาพิเศษ',
+    role TEXT NOT NULL DEFAULT 'admin',
+    position TEXT DEFAULT 'ครูร่วมดำเนินงาน',
+    affiliation TEXT DEFAULT 'ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี',
+    is_public BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2.2 students (ทะเบียนนักเรียนการศึกษาพิเศษ)
+-- รองรับการรันซ้ำบนฐานข้อมูลเดิมอย่างปลอดภัย
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS affiliation TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_role_check CHECK (role IN ('super_admin', 'admin', 'director', 'teacher'));
+
+-- 2.2 students (ทะเบียนนักเรียนในห้องเรียนเสริมวิชาการสู่การเรียนรวม — สงวนสิทธิ์เฉพาะผู้ดูแล)
 CREATE TABLE IF NOT EXISTS public.students (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_code TEXT NOT NULL UNIQUE,
@@ -34,10 +44,13 @@ CREATE TABLE IF NOT EXISTS public.students (
     iep_goal TEXT DEFAULT '',
     profile_image_drive_id TEXT,
     notes TEXT DEFAULT '',
+    is_public BOOLEAN NOT NULL DEFAULT false,
     created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT false;
 
 -- 2.3 student_logs (Case Timeline: บันทึกพัฒนาการ ปัญหาที่พบ และแนวทางช่วยเหลือรายบุคคล)
 CREATE TABLE IF NOT EXISTS public.student_logs (
@@ -128,7 +141,7 @@ CREATE TRIGGER trg_weekly_tasks_updated_at
   BEFORE UPDATE ON public.weekly_tasks
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- ตรวจสอบสิทธิ์ Admin (ใช้ใน RLS)
+-- ตรวจสอบสิทธิ์ผู้ดูแลระบบ (รองรับทั้งแอดมินหลัก super_admin และผู้ดูแล admin)
 CREATE OR REPLACE FUNCTION public.is_admin(user_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -141,12 +154,29 @@ BEGIN
   END IF;
   RETURN EXISTS (
     SELECT 1 FROM public.profiles
-    WHERE id = user_id AND role IN ('admin', 'director')
+    WHERE id = user_id AND role IN ('super_admin', 'admin', 'director')
   );
 END;
 $$;
 
--- Trigger สร้าง Profile อัตโนมัติเมื่อมีผู้ใช้ใหม่ใน auth.users
+CREATE OR REPLACE FUNCTION public.is_primary_admin(user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF user_id IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = user_id AND role = 'super_admin'
+  );
+END;
+$$;
+
+-- Trigger สร้าง Profile อัตโนมัติเมื่อมีผู้ใช้ใหม่ใน auth.users (ปิดการแสดงผลสาธารณะเป็นค่าเริ่มต้น)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -156,6 +186,8 @@ AS $$
 DECLARE
   v_display_name TEXT;
   v_role TEXT;
+  v_position TEXT;
+  v_affiliation TEXT;
 BEGIN
   v_display_name := COALESCE(
     NULLIF(TRIM(NEW.raw_user_meta_data->>'display_name'), ''),
@@ -164,16 +196,20 @@ BEGIN
     'ผู้ดูแลระบบ'
   );
   v_role := COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'role'), ''), 'admin');
-  IF v_role NOT IN ('admin', 'director', 'teacher') THEN
+  IF v_role NOT IN ('super_admin', 'admin', 'director', 'teacher') THEN
     v_role := 'admin';
   END IF;
+  v_position := COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'position'), ''), 'บุคลากรผู้รับผิดชอบ');
+  v_affiliation := COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'affiliation'), ''), '');
 
-  INSERT INTO public.profiles (id, email, display_name, role)
-  VALUES (NEW.id, NEW.email, v_display_name, v_role)
+  INSERT INTO public.profiles (id, email, display_name, role, position, affiliation, is_public)
+  VALUES (NEW.id, NEW.email, v_display_name, v_role, v_position, v_affiliation, false)
   ON CONFLICT (id) DO UPDATE
   SET email = EXCLUDED.email,
       display_name = EXCLUDED.display_name,
       role = EXCLUDED.role,
+      position = COALESCE(NULLIF(EXCLUDED.position, ''), public.profiles.position),
+      affiliation = COALESCE(NULLIF(EXCLUDED.affiliation, ''), public.profiles.affiliation),
       updated_at = timezone('utc'::text, now());
 
   RETURN NEW;
@@ -187,7 +223,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 5. Seed บัญชีผู้ดูแลระบบ 2 คน (ใช้งานจริง 2 คน)
+-- 5. Seed บัญชีผู้ดูแลระบบ 2 ท่าน (ใช้งานจริง 2 คน)
 -- ⚠️ เปลี่ยนอีเมลและรหัสผ่านเริ่มต้น 'Pongrad@2569' ก่อนรันหรือเปลี่ยนทันทีหลังเข้าสู่ระบบครั้งแรก
 DO $$
 DECLARE
@@ -195,16 +231,18 @@ DECLARE
     {
       "id": "00000000-0000-0000-0001-000000000001",
       "email": "wadpongradschool@gmail.com",
-      "display_name": "ครูเอก (ผู้ดูแลระบบ / ครูการศึกษาพิเศษ)",
-      "role": "admin",
-      "position": "ครูผู้รับผิดชอบงานการศึกษาพิเศษ"
+      "display_name": "นายเอกชัย ปลื้มใจ",
+      "role": "super_admin",
+      "position": "ครูพี่เลี้ยงเด็กพิเศษ",
+      "affiliation": "สำนักงานเขตพื้นที่การศึกษาประถมศึกษาจันทบุรี เขต 1"
     },
     {
       "id": "00000000-0000-0000-0001-000000000002",
-      "email": "sped2@pongrad.ac.th",
-      "display_name": "ครูผู้ช่วยการศึกษาพิเศษ (ผู้ดูแลคนที่ 2)",
+      "email": "duangporn.sped@pongrad.ac.th",
+      "display_name": "นางสาวดวงพร หวังอ้อมกลาง",
       "role": "admin",
-      "position": "ครูผู้สอนการศึกษาพิเศษ"
+      "position": "ครูชำนาญการ (ข้าราชการครู)",
+      "affiliation": "ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี"
     }
   ]'::jsonb;
   v_item JSONB;
@@ -214,6 +252,7 @@ DECLARE
   v_display_name TEXT;
   v_role TEXT;
   v_position TEXT;
+  v_affiliation TEXT;
 BEGIN
   FOR v_item IN SELECT * FROM jsonb_array_elements(v_users)
   LOOP
@@ -221,12 +260,15 @@ BEGIN
     v_display_name := v_item->>'display_name';
     v_role := v_item->>'role';
     v_position := v_item->>'position';
+    v_affiliation := v_item->>'affiliation';
+    v_target_id := (v_item->>'id')::uuid;
 
-    SELECT id INTO v_existing_id FROM auth.users WHERE lower(email) = v_email LIMIT 1;
+    SELECT id INTO v_existing_id
+    FROM auth.users
+    WHERE lower(email) = v_email OR id = v_target_id
+    LIMIT 1;
 
     IF v_existing_id IS NULL THEN
-      v_target_id := (v_item->>'id')::uuid;
-
       INSERT INTO auth.users (
         instance_id,
         id,
@@ -252,7 +294,12 @@ BEGIN
         extensions.crypt('Pongrad@2569', extensions.gen_salt('bf')),
         timezone('utc'::text, now()),
         '{"provider":"email","providers":["email"]}'::jsonb,
-        jsonb_build_object('display_name', v_display_name, 'role', v_role),
+        jsonb_build_object(
+          'display_name', v_display_name,
+          'role', v_role,
+          'position', v_position,
+          'affiliation', v_affiliation
+        ),
         timezone('utc'::text, now()),
         timezone('utc'::text, now()),
         '', '', '', ''
@@ -283,13 +330,13 @@ BEGIN
       v_target_id := v_existing_id;
     END IF;
 
-    INSERT INTO public.profiles (id, email, display_name, role, position)
-    VALUES (v_target_id, v_email, v_display_name, v_role, v_position)
+    INSERT INTO public.profiles (id, email, display_name, role, position, affiliation, is_public)
+    VALUES (v_target_id, v_email, v_display_name, v_role, v_position, v_affiliation, false)
     ON CONFLICT (id) DO UPDATE
-    SET email = EXCLUDED.email,
-        display_name = EXCLUDED.display_name,
+    SET display_name = EXCLUDED.display_name,
         role = EXCLUDED.role,
         position = EXCLUDED.position,
+        affiliation = EXCLUDED.affiliation,
         updated_at = timezone('utc'::text, now());
   END LOOP;
 END $$;
@@ -326,14 +373,16 @@ SELECT
 FROM generate_series(1, 20) AS gs(week_no)
 ON CONFLICT (week_number) DO NOTHING;
 
--- 7. Row Level Security (RLS)
+-- 7. Row Level Security (RLS) & Strict Public Privacy
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.student_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.media_assets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.weekly_tasks ENABLE ROW LEVEL SECURITY;
 
--- 7.1 profiles: ดูและแก้ไขข้อมูลตัวเอง หรือ Admin ดูได้ทั้งหมด
+-- 7.1 profiles: สาธารณะ (anon) ห้ามอ่านตาราง profiles โดยตรงเด็ดขาด
+REVOKE ALL ON public.profiles FROM anon;
+
 DROP POLICY IF EXISTS "Admins can view profiles" ON public.profiles;
 CREATE POLICY "Admins can view profiles"
   ON public.profiles FOR SELECT
@@ -344,10 +393,24 @@ DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
   TO authenticated
-  USING (id = auth.uid() OR public.is_admin(auth.uid()))
-  WITH CHECK (id = auth.uid() OR public.is_admin(auth.uid()));
+  USING (id = auth.uid() OR public.is_primary_admin(auth.uid()))
+  WITH CHECK (id = auth.uid() OR public.is_primary_admin(auth.uid()));
 
--- 7.2 students: เฉพาะ Admin 2 ท่านเท่านั้น (คุ้มครองข้อมูลส่วนบุคคล PDPA ของนักเรียนพิเศษ)
+-- มุมมองสาธารณะสำหรับบุคลากร (ส่งออกเฉพาะที่แอดมินเปิด is_public = true และไม่เปิดเผยอีเมล)
+CREATE OR REPLACE VIEW public.public_team_profiles AS
+SELECT
+  id,
+  display_name,
+  position,
+  affiliation
+FROM public.profiles
+WHERE is_public = true;
+
+GRANT SELECT ON public.public_team_profiles TO anon, authenticated;
+
+-- 7.2 students: เฉพาะ Admin 2 ท่านเท่านั้น (ห้ามแสดงรายชื่อ/รายละเอียดนักเรียนสาธารณะ)
+REVOKE ALL ON public.students FROM anon;
+
 DROP POLICY IF EXISTS "Admins manage students" ON public.students;
 CREATE POLICY "Admins manage students"
   ON public.students FOR ALL
@@ -356,6 +419,8 @@ CREATE POLICY "Admins manage students"
   WITH CHECK (public.is_admin(auth.uid()));
 
 -- 7.3 student_logs: เฉพาะ Admin 2 ท่านเท่านั้น
+REVOKE ALL ON public.student_logs FROM anon;
+
 DROP POLICY IF EXISTS "Admins manage student_logs" ON public.student_logs;
 CREATE POLICY "Admins manage student_logs"
   ON public.student_logs FOR ALL
@@ -364,7 +429,7 @@ CREATE POLICY "Admins manage student_logs"
   WITH CHECK (public.is_admin(auth.uid()));
 
 -- 7.4 media_assets:
--- สาธารณะ (ไม่ต้องล็อกอิน) ดูได้เฉพาะรายการที่ is_public = true
+-- สาธารณะ (ไม่ต้องล็อกอิน) ดูได้เฉพาะรายการที่ is_public = true เท่านั้น
 DROP POLICY IF EXISTS "Public can view public media_assets" ON public.media_assets;
 CREATE POLICY "Public can view public media_assets"
   ON public.media_assets FOR SELECT
@@ -378,6 +443,8 @@ CREATE POLICY "Admins manage media_assets"
   WITH CHECK (public.is_admin(auth.uid()));
 
 -- 7.5 weekly_tasks: เฉพาะ Admin 2 ท่านเท่านั้น
+REVOKE ALL ON public.weekly_tasks FROM anon;
+
 DROP POLICY IF EXISTS "Admins manage weekly_tasks" ON public.weekly_tasks;
 CREATE POLICY "Admins manage weekly_tasks"
   ON public.weekly_tasks FOR ALL

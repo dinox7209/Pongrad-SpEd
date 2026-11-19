@@ -56,7 +56,7 @@ export default function MediaStudioPage() {
   const [gradeLevel, setGradeLevel] = useState<string>("ทุกระดับชั้น");
   const [studentId, setStudentId] = useState<string>("");
   const [weekNumber, setWeekNumber] = useState<string>("");
-  const [isPublic, setIsPublic] = useState<boolean>(true);
+  const [isPublic, setIsPublic] = useState<boolean>(false);
   const [linkToWeek, setLinkToWeek] = useState<boolean>(false);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");

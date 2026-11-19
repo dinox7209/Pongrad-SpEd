@@ -24,11 +24,11 @@ import {
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAdmin, profile, signOut } = useAuth();
+  const { isAdmin, isPrimaryAdmin, profile, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const publicLinks = [
-    { href: "/showcase", label: "ผลงานสาธารณะ", icon: Sparkles },
+    { href: "/showcase", label: "หน้าเผยแพร่ผลงาน", icon: Sparkles },
   ];
 
   const adminLinks = [
@@ -51,7 +51,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 liquid-glass-nav running-line-bottom border-b border-white/20 text-white no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
-          {/* Logo & School Title */}
+          {/* Logo & Resource Room Title */}
           <Link
             href="/showcase"
             className="flex items-center space-x-2.5 sm:space-x-3 group min-w-0"
@@ -61,19 +61,19 @@ export function Navbar() {
             </div>
             <div className="min-w-0">
               <div className="font-bold text-sm sm:text-base text-white tracking-wide group-hover:text-pink-200 transition-colors truncate">
-                ระบบการศึกษาพิเศษ (Pongrad SpEd)
+                {SCHOOL_INFO.projectName}
               </div>
               <div className="text-[11px] sm:text-xs text-purple-200/90 flex items-center gap-1.5 truncate">
                 <span className="truncate">{SCHOOL_INFO.name}</span>
                 <span className="hidden md:inline-block w-1.5 h-1.5 rounded-full bg-pink-300 shrink-0" />
-                <span className="hidden md:inline-block text-[11px] text-pink-200 shrink-0">
-                  {SCHOOL_INFO.area}
+                <span className="hidden md:inline-block text-[11px] text-pink-200 truncate">
+                  × {SCHOOL_INFO.partnerName}
                 </span>
               </div>
             </div>
           </Link>
 
-          {/* Desktop Navigation (iOS 2026 Liquid Pill Capsule) */}
+          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1 bg-white/10 backdrop-blur-md px-1.5 py-1 rounded-2xl border border-white/20">
             {visibleLinks.map((link) => {
               const Icon = link.icon;
@@ -106,12 +106,13 @@ export function Navbar() {
                 <div className="text-right">
                   <div className="text-xs font-semibold text-white flex items-center justify-end gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-pink-300 shrink-0" />
-                    <span className="max-w-[160px] truncate">
+                    <span className="max-w-[170px] truncate">
                       {profile?.display_name || "ผู้ดูแลระบบ"}
                     </span>
                   </div>
-                  <div className="text-[10px] text-pink-200">
-                    {profile?.position || "ผู้ดูแลระบบหลังบ้าน (2 คน)"}
+                  <div className="text-[10px] text-pink-200 max-w-[190px] truncate">
+                    {isPrimaryAdmin ? "แอดมินหลัก • " : ""}
+                    {profile?.position || "ผู้ดูแลระบบ"}
                   </div>
                 </div>
                 <button
@@ -127,14 +128,14 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <span className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-[11px] text-purple-100">
                   <Globe className="w-3.5 h-3.5 text-pink-300" />
-                  <span>เปิดดูผลงานสาธารณะ</span>
+                  <span>มุมมองสาธารณะ</span>
                 </span>
                 <Link
                   href="/login"
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold text-sm shadow-glass-pink border border-white/30 transition-all"
                 >
                   <LogIn className="w-4 h-4" />
-                  <span>เข้าสู่ระบบผู้ดูแล</span>
+                  <span>เข้าสู่ระบบเจ้าหน้าที่</span>
                 </Link>
               </div>
             )}
@@ -189,7 +190,8 @@ export function Navbar() {
                     {profile?.display_name || "ผู้ดูแลระบบ"}
                   </div>
                   <div className="text-xs text-pink-200 truncate">
-                    {profile?.position || "ผู้ดูแลระบบหลังบ้าน"}
+                    {isPrimaryAdmin ? "แอดมินหลัก • " : ""}
+                    {profile?.position || "ผู้ดูแลระบบ"}
                   </div>
                 </div>
                 <button
@@ -208,7 +210,7 @@ export function Navbar() {
                 className="flex items-center justify-center gap-2 w-full py-2.5 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white font-semibold text-sm border border-white/30"
               >
                 <LogIn className="w-4 h-4" />
-                <span>เข้าสู่ระบบหลังบ้าน (ผู้ดูแล 2 ท่าน)</span>
+                <span>เข้าสู่ระบบเจ้าหน้าที่</span>
               </Link>
             )}
           </div>

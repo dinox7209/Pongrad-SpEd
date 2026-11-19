@@ -2,17 +2,19 @@
 
 import {
   DEMO_MEDIA_ASSETS,
+  DEMO_PROFILES,
   DEMO_STUDENT_LOGS,
   DEMO_STUDENTS,
   DEMO_WEEKLY_TASKS,
 } from "@/lib/demo-data";
-import { MediaAsset, Student, StudentLog, WeeklyTask } from "@/types/database";
+import { MediaAsset, Profile, Student, StudentLog, WeeklyTask } from "@/types/database";
 
 const KEYS = {
-  students: "pongrad_sped_demo_students_v1",
-  logs: "pongrad_sped_demo_logs_v1",
-  media: "pongrad_sped_demo_media_v1",
-  tasks: "pongrad_sped_demo_tasks_v1",
+  profiles: "pongrad_sped_demo_profiles_v2",
+  students: "pongrad_sped_demo_students_v2",
+  logs: "pongrad_sped_demo_logs_v2",
+  media: "pongrad_sped_demo_media_v2",
+  tasks: "pongrad_sped_demo_tasks_v2",
 };
 
 function readStore<T>(key: string, fallback: T): T {
@@ -33,6 +35,13 @@ function writeStore<T>(key: string, value: T): void {
   } catch {
     // Ignore storage quota errors
   }
+}
+
+export function getDemoProfiles(): Profile[] {
+  return readStore<Profile[]>(KEYS.profiles, DEMO_PROFILES);
+}
+export function saveDemoProfiles(profiles: Profile[]): void {
+  writeStore(KEYS.profiles, profiles);
 }
 
 export function getDemoStudents(): Student[] {

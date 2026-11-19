@@ -7,12 +7,15 @@ import { supabase } from "@/lib/supabase/client";
 import {
   getDemoLogs,
   getDemoMedia,
+  getDemoProfiles,
   getDemoStudents,
   getDemoTasks,
+  saveDemoProfiles,
 } from "@/lib/demo-store";
 import { formatDateThai } from "@/lib/utils";
 import {
   MediaAsset,
+  Profile,
   SCHOOL_INFO,
   Student,
   STUDENT_STATUS_META,
@@ -22,26 +25,32 @@ import {
 import {
   AlertTriangle,
   ArrowUpRight,
+  Building2,
   CalendarCheck2,
   CheckCircle2,
   Clock,
+  Eye,
+  EyeOff,
   FileText,
   Film,
   FolderOpen,
   Globe,
   HeartPulse,
+  Lock,
   PlusCircle,
   School,
+  ShieldCheck,
   Sparkles,
   Users,
 } from "lucide-react";
 
 export default function AdminDashboardPage() {
-  const { isConfigured, profile } = useAuth();
+  const { isConfigured, isPrimaryAdmin, profile, refreshProfile } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [logs, setLogs] = useState<StudentLog[]>([]);
   const [media, setMedia] = useState<MediaAsset[]>([]);
   const [tasks, setTasks] = useState<WeeklyTask[]>([]);
+  const [teamProfiles, setTeamProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,7 +58,7 @@ export default function AdminDashboardPage() {
       setLoading(true);
       try {
         if (isConfigured) {
-          const [stRes, logRes, mediaRes, taskRes] = await Promise.all([
+          const [stRes, logRes, mediaRes, taskRes, profRes] = await Promise.all([
             supabase.from("students").select("*").order("created_at", { ascending: false }),
             supabase
               .from("student_logs")
@@ -58,12 +67,14 @@ export default function AdminDashboardPage() {
               .limit(6),
             supabase.from("media_assets").select("*").order("created_at", { ascending: false }),
             supabase.from("weekly_tasks").select("*").order("week_number", { ascending: true }),
+            supabase.from("profiles").select("*").order("role", { ascending: false }),
           ]);
 
           setStudents((stRes.data as Student[]) || []);
           setLogs((logRes.data as StudentLog[]) || []);
           setMedia((mediaRes.data as MediaAsset[]) || []);
           setTasks((taskRes.data as WeeklyTask[]) || []);
+          setTeamProfiles((profRes.data as Profile[]) || []);
         } else {
           const demoStudents = getDemoStudents();
           const studentMap = new Map(demoStudents.map((s) => [s.id, s]));
@@ -75,6 +86,7 @@ export default function AdminDashboardPage() {
           setLogs(demoLogs);
           setMedia(getDemoMedia());
           setTasks(getDemoTasks());
+          setTeamProfiles(getDemoProfiles());
         }
       } catch (err) {
         console.error("Failed to load admin dashboard:", err);
@@ -85,6 +97,35 @@ export default function AdminDashboardPage() {
 
     loadDashboard();
   }, [isConfigured]);
+
+  const handleToggleProfilePublic = async (targetProfile: Profile) => {
+    if (!isPrimaryAdmin) return;
+    const nextPublic = !Boolean(targetProfile.is_public);
+
+    if (isConfigured) {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_public: nextPublic })
+        .eq("id", targetProfile.id);
+
+      if (error) {
+        alert(`ปรับสิทธิ์การเผยแพร่ไม่สำเร็จ: ${error.message}`);
+        return;
+      }
+      setTeamProfiles((prev) =>
+        prev.map((p) =>
+          p.id === targetProfile.id ? { ...p, is_public: nextPublic } : p
+        )
+      );
+      await refreshProfile();
+    } else {
+      const nextList = teamProfiles.map((p) =>
+        p.id === targetProfile.id ? { ...p, is_public: nextPublic } : p
+      );
+      setTeamProfiles(nextList);
+      saveDemoProfiles(nextList);
+    }
+  };
 
   const stats = useMemo(() => {
     const activeCount = students.filter((s) => s.current_status === "Active").length;
@@ -124,13 +165,16 @@ export default function AdminDashboardPage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 text-pink-100 text-xs font-semibold border border-white/25 backdrop-blur-md">
               <School className="w-3.5 h-3.5" />
-              <span>ศูนย์การศึกษาพิเศษ • สวัสดี {profile?.display_name || "ผู้ดูแลระบบ"}</span>
+              <span>
+                {SCHOOL_INFO.projectName} • สวัสดี {profile?.display_name || "ผู้ดูแลระบบ"}
+                {isPrimaryAdmin ? " (แอดมินหลัก)" : ""}
+              </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              แดชบอร์ดจัดการสื่อและติดตามนักเรียนพิเศษ
+              แดชบอร์ดบริหารจัดการห้องเรียนเสริมวิชาการ (Resource Room)
             </h1>
-            <p className="text-purple-100/90 text-sm max-w-2xl">
-              {SCHOOL_INFO.name} • บริหารรายชื่อนักเรียนรายกรณี เอกสาร A4 อัตโนมัติ คลังสื่อ Google Drive และปฏิทิน 20 สัปดาห์
+            <p className="text-purple-100/90 text-sm max-w-3xl">
+              {SCHOOL_INFO.cooperationDescription}
             </p>
           </div>
 
@@ -241,6 +285,94 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Team & Privacy Control (เฉพาะหลังบ้านเท่านั้น) */}
+      <div className="liquid-glass rounded-3xl p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="space-y-1.5">
+            <h2 className="font-bold text-navy-950 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-pink-600" />
+              <span>คณะทำงานความร่วมมือ &amp; ควบคุมความเป็นส่วนตัว (2 ท่าน)</span>
+            </h2>
+            <div className="heading-beam-track" />
+          </div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-900 text-xs font-semibold border border-purple-200">
+            <Lock className="w-3.5 h-3.5 text-pink-600" />
+            <span>ซ่อนรายชื่อครูและนักเรียนจากสาธารณะเป็นค่าเริ่มต้น</span>
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {teamProfiles.map((member) => {
+            const isPrimary = member.role === "super_admin";
+            const isPublicShown = Boolean(member.is_public);
+            return (
+              <div
+                key={member.id}
+                className="bg-white/75 rounded-2xl border border-purple-200/80 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-bold text-navy-950 text-sm sm:text-base">
+                      {member.display_name}
+                    </span>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                        isPrimary
+                          ? "bg-gradient-to-r from-purple-700 to-pink-600 text-white"
+                          : "bg-purple-100 text-purple-800"
+                      }`}
+                    >
+                      {isPrimary ? "แอดมินหลัก" : "ผู้ดูแลระบบ"}
+                    </span>
+                  </div>
+                  <div className="text-xs font-semibold text-pink-700">
+                    ตำแหน่ง: {member.position || "-"}
+                  </div>
+                  <div className="text-xs text-purple-900/75 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <span>สังกัด {member.affiliation || "-"}</span>
+                  </div>
+                </div>
+
+                <div className="shrink-0">
+                  {isPrimaryAdmin ? (
+                    <button
+                      type="button"
+                      onClick={() => handleToggleProfilePublic(member)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border cursor-pointer transition-colors ${
+                        isPublicShown
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-purple-50 text-purple-800 border-purple-200 hover:bg-white"
+                      }`}
+                    >
+                      {isPublicShown ? (
+                        <Eye className="w-3.5 h-3.5" />
+                      ) : (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      )}
+                      <span>
+                        {isPublicShown ? "แสดงบนหน้าสาธารณะ" : "ซ่อนจากหน้าสาธารณะ"}
+                      </span>
+                    </button>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-xs font-semibold">
+                      {isPublicShown ? (
+                        <Eye className="w-3.5 h-3.5" />
+                      ) : (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      )}
+                      <span>
+                        {isPublicShown ? "แสดงบนหน้าสาธารณะ" : "ซ่อนจากหน้าสาธารณะ"}
+                      </span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Quick Action Modules */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
@@ -253,7 +385,7 @@ export default function AdminDashboardPage() {
             </div>
             <ArrowUpRight className="w-4 h-4 text-purple-400 group-hover:text-pink-600" />
           </div>
-          <h2 className="font-bold text-navy-950 text-sm">ทะเบียนนักเรียน & Case Timeline</h2>
+          <h2 className="font-bold text-navy-950 text-sm">ทะเบียนนักเรียน &amp; Case Timeline</h2>
           <p className="text-xs text-purple-900/65 mt-1">
             บันทึกข้อมูล ปรับสถานะ 5 ระดับ และบันทึกแนวทางช่วยเหลือรายบุคคล
           </p>
@@ -285,7 +417,7 @@ export default function AdminDashboardPage() {
             </div>
             <ArrowUpRight className="w-4 h-4 text-purple-400 group-hover:text-pink-600" />
           </div>
-          <h2 className="font-bold text-navy-950 text-sm">คลังสื่อ & ตัดต่อคลิป 720p</h2>
+          <h2 className="font-bold text-navy-950 text-sm">คลังสื่อ &amp; ตัดต่อคลิป 720p</h2>
           <p className="text-xs text-purple-900/65 mt-1">
             ตัดหัว-ท้าย ใส่ข้อความภาษาไทย ปรับขนาด 720p และสตรีมตรงขึ้น Drive
           </p>
@@ -301,7 +433,7 @@ export default function AdminDashboardPage() {
             </div>
             <ArrowUpRight className="w-4 h-4 text-purple-400 group-hover:text-pink-600" />
           </div>
-          <h2 className="font-bold text-navy-950 text-sm">ติดตามงาน 20 สัปดาห์ & LINE</h2>
+          <h2 className="font-bold text-navy-950 text-sm">ติดตามงาน 20 สัปดาห์ &amp; LINE</h2>
           <p className="text-xs text-purple-900/65 mt-1">
             สลับสถานะ Pending/Completed และแจ้งเตือนสรุปงานทุกวันศุกร์
           </p>
