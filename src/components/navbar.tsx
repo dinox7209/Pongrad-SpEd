@@ -20,7 +20,6 @@ import {
   X,
   ShieldCheck,
   GraduationCap,
-  Globe,
   Handshake,
   Layers,
   Palette,
@@ -49,7 +48,8 @@ export function Navbar() {
     { href: "/admin/branding", label: "โลโก้", icon: Palette },
   ];
 
-  const visibleLinks = isAdmin ? [...publicLinks, ...adminLinks] : publicLinks;
+  const isLinkActive = (href: string) =>
+    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
   const handleLogout = async () => {
     await signOut();
@@ -59,15 +59,16 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 liquid-glass-nav running-line-bottom border-b border-white/20 text-white no-print">
+      {/* Row 1: Top Brand Identity & Account / Public Controls */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 h-16 sm:h-[74px]">
-          {/* Logo & Compact Brand */}
+        <div className="flex items-center justify-between gap-4 h-16 sm:h-[68px]">
+          {/* Brand Crest & Full School Title */}
           <Link
             href="/showcase"
-            className="flex items-center gap-2.5 group min-w-0 shrink"
+            className="flex items-center gap-3 group min-w-0 flex-1"
           >
             <div
-              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shadow-glass-pink border group-hover:scale-105 transition-transform shrink-0 overflow-hidden ${
+              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center shadow-glass-pink border group-hover:scale-105 transition-transform shrink-0 overflow-hidden ${
                 appIconUrl
                   ? "bg-white/95 p-1 border-white/60"
                   : "bg-gradient-to-br from-fuchsia-400/90 via-purple-500/85 to-pink-500/90 border-white/40"
@@ -83,57 +84,53 @@ export function Navbar() {
                 <GraduationCap className="w-5 h-5 text-white drop-shadow" />
               )}
             </div>
-            <div className="min-w-0">
-              <div className="font-bold text-sm sm:text-base text-white tracking-wide group-hover:text-pink-200 transition-colors whitespace-nowrap truncate">
-                ห้องเรียนเสริมวิชาการ
-                <span className="hidden sm:inline font-normal text-pink-200 text-xs ml-1.5">
+
+            <div className="min-w-0 flex-1">
+              <div className="font-bold text-sm sm:text-base text-white tracking-wide group-hover:text-pink-200 transition-colors truncate">
+                ห้องเรียนเสริมวิชาการสู่การเรียนรวม
+                <span className="hidden md:inline font-normal text-pink-200 text-xs ml-1.5">
                   (Resource Room)
                 </span>
               </div>
-              <div className="text-[11px] text-purple-200/90 truncate max-w-[180px] 2xl:max-w-[240px]">
-                รร.วัดโป่งแรด × ศูนย์การศึกษาพิเศษ จันทบุรี
+              <div className="text-[11px] sm:text-xs text-purple-200/90 truncate">
+                {SCHOOL_INFO.name} × {SCHOOL_INFO.partnerName}
               </div>
             </div>
           </Link>
 
-          {/* Desktop Navigation (Single-line Liquid Pill Capsule) */}
-          <nav className="hidden xl:flex items-center gap-0.5 bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-white/20 shrink-0">
-            {visibleLinks.map((link) => {
-              const Icon = link.icon;
-              const isActive =
-                link.href === "/admin"
-                  ? pathname === "/admin"
-                  : pathname.startsWith(link.href);
+          {/* Desktop Right Utility: Public Nav (when guest) OR Profile Card (when admin) */}
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
+            {!isAdmin && (
+              <nav className="flex items-center gap-1 bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-white/20">
+                {publicLinks.map((link) => {
+                  const Icon = link.icon;
+                  const active = isLinkActive(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                        active
+                          ? "bg-gradient-to-r from-purple-500/90 to-pink-500/90 text-white shadow-glass-pink border border-white/35"
+                          : "text-purple-100 hover:bg-white/15 hover:text-white"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            )}
 
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-1 px-1.5 2xl:px-2.5 py-1.5 rounded-xl text-[11px] 2xl:text-xs font-semibold whitespace-nowrap transition-all ${
-                    isActive
-                      ? "bg-gradient-to-r from-purple-500/90 to-pink-500/90 text-white shadow-glass-pink border border-white/35"
-                      : "text-purple-100 hover:bg-white/15 hover:text-white"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5 shrink-0" />
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* User Profile / Login Button */}
-          <div className="hidden xl:flex items-center gap-2.5 shrink-0">
             {isAdmin ? (
-              <div className="flex items-center gap-2.5 bg-white/12 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/25">
+              <div className="flex items-center gap-2.5 bg-white/12 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/25">
                 <div className="text-right">
-                  <div className="text-xs font-semibold text-white flex items-center justify-end gap-1 whitespace-nowrap">
+                  <div className="text-xs font-semibold text-white flex items-center justify-end gap-1.5 whitespace-nowrap">
                     <ShieldCheck className="w-3.5 h-3.5 text-pink-300 shrink-0" />
-                    <span className="max-w-[140px] truncate">
-                      {profile?.display_name || "ผู้ดูแลระบบ"}
-                    </span>
+                    <span>{profile?.display_name || "ผู้ดูแลระบบ"}</span>
                   </div>
-                  <div className="text-[10px] text-pink-200 max-w-[155px] truncate">
+                  <div className="text-[10px] text-pink-200 whitespace-nowrap">
                     {isPrimaryAdmin ? "แอดมินหลัก • " : ""}
                     {profile?.position || "ผู้ดูแลระบบ"}
                   </div>
@@ -148,24 +145,18 @@ export function Navbar() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-[11px] text-purple-100 whitespace-nowrap">
-                  <Globe className="w-3.5 h-3.5 text-pink-300" />
-                  <span>มุมมองสาธารณะ</span>
-                </span>
-                <Link
-                  href="/login"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold text-xs sm:text-sm shadow-glass-pink border border-white/30 whitespace-nowrap transition-all"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>เข้าสู่ระบบเจ้าหน้าที่</span>
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold text-xs sm:text-sm shadow-glass-pink border border-white/30 whitespace-nowrap transition-all"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>เข้าสู่ระบบเจ้าหน้าที่</span>
+              </Link>
             )}
           </div>
 
           {/* Mobile / Tablet Hamburger */}
-          <div className="xl:hidden flex items-center gap-2">
+          <div className="lg:hidden flex items-center gap-2 shrink-0">
             {!isAdmin && (
               <Link
                 href="/login"
@@ -178,7 +169,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
-              className="p-2 rounded-xl bg-white/10 border border-white/20 text-purple-100 hover:text-white hover:bg-white/20 focus:outline-none"
+              className="p-2 rounded-xl bg-white/10 border border-white/20 text-purple-100 hover:text-white hover:bg-white/20 focus:outline-none cursor-pointer"
               aria-label="เปิดเมนู"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -187,37 +178,120 @@ export function Navbar() {
         </div>
       </div>
 
+      {/* Row 2: Dedicated Admin Sub-Navigation Bar (Brought down cleanly below Brand row) */}
+      {isAdmin && (
+        <div className="hidden lg:block border-t border-white/15 bg-black/10 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <nav
+              aria-label="เมนูหลักระบบ"
+              className="flex items-center justify-between gap-2 overflow-x-auto"
+            >
+              <div className="flex items-center gap-1 shrink-0">
+                {publicLinks.map((link) => {
+                  const Icon = link.icon;
+                  const active = isLinkActive(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                        active
+                          ? "bg-white/25 text-white border border-white/40 shadow-sm"
+                          : "text-purple-100/90 hover:bg-white/15 hover:text-white"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 text-pink-200 shrink-0" />
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="h-5 w-px bg-white/20 shrink-0" aria-hidden="true" />
+
+              <div className="flex items-center gap-1 flex-wrap xl:flex-nowrap justify-end">
+                {adminLinks.map((link) => {
+                  const Icon = link.icon;
+                  const active = isLinkActive(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                        active
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-glass-pink border border-white/35"
+                          : "text-purple-100 hover:bg-white/15 hover:text-white"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
+          </div>
+        </div>
+      )}
+
       {/* Mobile / Tablet Dropdown */}
       {mobileMenuOpen && (
-        <div className="xl:hidden bg-navy-950/92 backdrop-blur-2xl border-t border-white/15 px-4 pt-3 pb-5 space-y-2">
-          <div className="text-[11px] text-purple-200/80 px-2 pb-1">
-            {SCHOOL_INFO.name} × {SCHOOL_INFO.partnerName}
+        <div className="lg:hidden bg-navy-950/95 backdrop-blur-2xl border-t border-white/15 px-4 pt-3 pb-5 space-y-3 max-h-[82vh] overflow-y-auto">
+          <div className="space-y-1.5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-pink-200/80 px-2">
+              หน้าเผยแพร่สาธารณะ
+            </div>
+            {publicLinks.map((link) => {
+              const Icon = link.icon;
+              const active = isLinkActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-medium ${
+                    active
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border border-white/25"
+                      : "text-purple-100 hover:bg-white/10"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
           </div>
-          {visibleLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive =
-              link.href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(link.href);
 
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-medium ${
-                  isActive
-                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border border-white/25"
-                    : "text-purple-100 hover:bg-white/10"
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
+          {isAdmin && (
+            <div className="space-y-1.5 pt-2 border-t border-white/15">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-pink-200/80 px-2">
+                ระบบจัดการหลังบ้าน
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {adminLinks.map((link) => {
+                  const Icon = link.icon;
+                  const active = isLinkActive(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl text-xs font-semibold ${
+                        active
+                          ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border border-white/25"
+                          : "text-purple-100 bg-white/5 hover:bg-white/10"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-          <div className="pt-3 mt-3 border-t border-white/15">
+          <div className="pt-3 border-t border-white/15">
             {isAdmin ? (
               <div className="flex items-center justify-between px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-2xl">
                 <div className="min-w-0 pr-2">
