@@ -95,8 +95,8 @@ export function Footer() {
               <Handshake className="w-3.5 h-3.5 text-pink-200" />
               <span>บันทึกข้อตกลงความร่วมมือ (MOU)</span>
             </Link>
-            <span className="text-purple-200/75">
-              © 2026 All rights reserved. ข้อมูลส่วนบุคคลได้รับการคุ้มครอง
+            <span className="text-purple-200/85">
+              พัฒนาโดย ครูเอก · © 2026 Crafted with code &amp; coffee by Kru Aek. All rights reserved.
             </span>
           </div>
         </div>
