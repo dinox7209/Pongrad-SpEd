@@ -284,22 +284,25 @@ export default function StudentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="space-y-1.5">
           <h1 className="text-2xl font-extrabold text-navy-950 flex items-center gap-2.5">
-            <Users className="w-6 h-6 text-blue-600" />
+            <span className="w-9 h-9 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-glass-pink">
+              <Users className="w-5 h-5" />
+            </span>
             <span>ทะเบียนนักเรียนพิเศษ & Case Timeline</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <div className="heading-beam-track" />
+          <p className="text-xs sm:text-sm text-purple-900/70">
             บันทึกรายชื่อนักเรียน ระดับชั้น อ.1 - ป.6 ประเภทความบกพร่อง สถานะการติดตาม และประวัติพัฒนาการรายบุคคล
           </p>
         </div>
         <button
           type="button"
           onClick={openCreateModal}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-md transition-colors cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full liquid-btn-primary text-white text-sm font-semibold cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
           <span>เพิ่มนักเรียนพิเศษ</span>
@@ -311,10 +314,10 @@ export default function StudentsPage() {
         <button
           type="button"
           onClick={() => setFilterStatus("all")}
-          className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+          className={`px-4 py-2 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
             filterStatus === "all"
-              ? "bg-navy-900 text-white border-navy-900"
-              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+              ? "liquid-btn-primary text-white border-white/30"
+              : "liquid-glass-subtle text-purple-900 hover:bg-white/80"
           }`}
         >
           ทั้งหมด ({statusCounts.all || 0})
@@ -327,10 +330,10 @@ export default function StudentsPage() {
               key={st}
               type="button"
               onClick={() => setFilterStatus(st)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
                 active
-                  ? "bg-navy-900 text-white border-navy-900"
-                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                  ? "liquid-btn-primary text-white border-white/30"
+                  : "liquid-glass-subtle text-purple-900 hover:bg-white/80"
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${meta.dotClass}`} />
@@ -343,22 +346,22 @@ export default function StudentsPage() {
       </div>
 
       {/* Search & Select Filters */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="liquid-glass rounded-3xl p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-purple-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="ค้นหารหัส ชื่อ-สกุล หรือชื่อเล่น..."
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-9 pr-3 py-2 rounded-2xl bg-white/75 border border-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
           />
         </div>
 
         <select
           value={filterGrade}
           onChange={(e) => setFilterGrade(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 rounded-2xl bg-white/75 border border-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
         >
           <option value="all">ทุกระดับชั้น (อ.1 - ป.6)</option>
           {GRADE_LEVELS.map((g) => (
@@ -371,7 +374,7 @@ export default function StudentsPage() {
         <select
           value={filterDisability}
           onChange={(e) => setFilterDisability(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 rounded-2xl bg-white/75 border border-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
         >
           <option value="all">ทุกประเภทความบกพร่อง</option>
           {DISABILITY_TYPES.map((d) => (
@@ -388,12 +391,12 @@ export default function StudentsPage() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-44 rounded-2xl bg-white border border-slate-200 animate-pulse"
+              className="h-44 rounded-3xl liquid-glass animate-pulse"
             />
           ))}
         </div>
       ) : filteredStudents.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center text-sm text-slate-500">
+        <div className="liquid-glass rounded-3xl p-10 text-center text-sm text-purple-900/60">
           ไม่พบรายชื่อนักเรียนที่ตรงกับเงื่อนไข
         </div>
       ) : (
@@ -403,17 +406,17 @@ export default function StudentsPage() {
             return (
               <div
                 key={student.id}
-                className="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md p-5 flex flex-col justify-between gap-4 transition-all"
+                className="liquid-glass running-line-bottom rounded-3xl p-5 flex flex-col justify-between gap-4 transition-all hover:-translate-y-0.5 hover:shadow-glass-lg"
               >
                 <div className="space-y-2.5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <div className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
+                      <div className="text-[11px] font-bold text-pink-600 uppercase tracking-wider">
                         {student.student_code} • {student.grade_level}
                       </div>
                       <Link
                         href={`/admin/students/${student.id}`}
-                        className="text-base font-bold text-navy-950 hover:text-blue-600 transition-colors"
+                        className="text-base font-bold text-navy-950 hover:text-pink-600 transition-colors"
                       >
                         {student.full_name}{" "}
                         {student.nickname ? `(${student.nickname})` : ""}
@@ -440,39 +443,39 @@ export default function StudentsPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-xs">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-medium">
-                      <GraduationCap className="w-3.5 h-3.5 text-navy-700" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-100/75 text-purple-900 font-medium">
+                      <GraduationCap className="w-3.5 h-3.5 text-purple-700" />
                       <span>{student.disability_type}</span>
                     </span>
                     {student.guardian_contact && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">
-                        <Phone className="w-3.5 h-3.5 text-blue-600" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-pink-50/90 text-purple-900">
+                        <Phone className="w-3.5 h-3.5 text-pink-600" />
                         <span>{student.guardian_contact}</span>
                       </span>
                     )}
                   </div>
 
                   {student.iep_goal && (
-                    <p className="text-xs text-slate-600 bg-slate-50 rounded-xl p-2.5 border border-slate-100 line-clamp-2">
+                    <p className="text-xs text-purple-950/75 bg-white/65 rounded-2xl p-3 border border-purple-200/60 line-clamp-2">
                       <strong>เป้าหมาย IEP:</strong> {student.iep_goal}
                     </p>
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                <div className="pt-3 border-t border-purple-200/50 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/admin/students/${student.id}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-btn-primary text-white text-xs font-semibold transition-all"
                     >
-                      <Clock className="w-3.5 h-3.5 text-blue-300" />
+                      <Clock className="w-3.5 h-3.5 text-pink-100" />
                       <span>Case Timeline</span>
                     </Link>
                     <Link
                       href={`/admin/generator?studentId=${student.id}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white text-purple-800 border border-purple-200 text-xs font-semibold transition-colors"
                     >
-                      <FileText className="w-3.5 h-3.5" />
+                      <FileText className="w-3.5 h-3.5 text-pink-600" />
                       <span>สร้าง PDF</span>
                     </Link>
                   </div>
@@ -481,7 +484,7 @@ export default function StudentsPage() {
                     <button
                       type="button"
                       onClick={() => openEditModal(student)}
-                      className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"
+                      className="p-2 rounded-full text-purple-600 hover:text-pink-600 hover:bg-white/80 cursor-pointer"
                       title="แก้ไขข้อมูล"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -489,7 +492,7 @@ export default function StudentsPage() {
                     <button
                       type="button"
                       onClick={() => handleDeleteStudent(student)}
-                      className="p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                      className="p-2 rounded-full text-purple-600 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                       title="ลบข้อมูล"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -504,11 +507,11 @@ export default function StudentsPage() {
 
       {/* Create / Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 bg-navy-900 text-white flex items-center justify-between sticky top-0">
+        <div className="fixed inset-0 z-50 bg-purple-950/65 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="liquid-glass rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 liquid-glass-nav text-white flex items-center justify-between sticky top-0 z-10">
               <h2 className="font-bold text-base flex items-center gap-2">
-                <Plus className="w-4 h-4 text-blue-300" />
+                <Plus className="w-4 h-4 text-pink-300" />
                 <span>
                   {form.id ? "แก้ไขข้อมูลนักเรียนพิเศษ" : "เพิ่มรายชื่อนักเรียนพิเศษ"}
                 </span>
@@ -516,7 +519,7 @@ export default function StudentsPage() {
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-navy-800 cursor-pointer"
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -690,7 +693,7 @@ export default function StudentsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm cursor-pointer"
+                  className="px-5 py-2 rounded-full liquid-btn-primary text-white text-sm font-semibold cursor-pointer"
                 >
                   {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
                 </button>

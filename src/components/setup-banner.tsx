@@ -42,10 +42,10 @@ export function SetupBanner() {
   };
 
   return (
-    <div className="bg-amber-950 border-b border-amber-500/40 text-amber-100 px-4 py-3 no-print">
+    <div className="bg-gradient-to-r from-purple-950/90 via-fuchsia-950/85 to-pink-950/90 backdrop-blur-xl border-b border-pink-400/30 text-pink-100 px-4 py-2.5 no-print">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 text-xs sm:text-sm">
         <div className="flex items-start gap-2.5">
-          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-pink-300 shrink-0 mt-0.5" />
           <div>
             {!isConfigured ? (
               <>
@@ -57,7 +57,7 @@ export function SetupBanner() {
               </>
             ) : (
               <>
-                <span className="font-bold text-amber-300">
+                <span className="font-bold text-pink-200">
                   ยังไม่ได้รันสคริปต์ฐานข้อมูล ({projectRef || "Supabase"}):{" "}
                 </span>
                 <span>
@@ -72,10 +72,10 @@ export function SetupBanner() {
           <button
             type="button"
             onClick={copySql}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-bold shadow-sm transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500 to-fuchsia-500 hover:from-pink-400 hover:to-fuchsia-400 text-white rounded-full text-xs font-bold shadow-sm border border-white/25 transition-colors cursor-pointer"
           >
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-900" />
+              <Check className="w-3.5 h-3.5 text-white" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
@@ -86,7 +86,7 @@ export function SetupBanner() {
             href={sqlEditorUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold shadow-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-full text-xs font-bold border border-white/25 transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             <span>เปิด SQL Editor</span>
@@ -96,7 +96,7 @@ export function SetupBanner() {
             <button
               type="button"
               onClick={handleRecheck}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-900/70 hover:bg-amber-800 text-amber-200 rounded-lg text-xs font-medium border border-amber-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-pink-100 rounded-full text-xs font-medium border border-white/20 transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${checking ? "animate-spin" : ""}`} />
               <span>ตรวจสอบอีกครั้ง</span>

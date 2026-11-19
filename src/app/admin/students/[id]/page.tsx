@@ -211,11 +211,11 @@ export default function StudentDetailPage() {
   const statusMeta = STUDENT_STATUS_META[student.current_status];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/admin/students"
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-600 hover:text-navy-900"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-purple-800 hover:text-pink-600"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>กลับทะเบียนนักเรียนทั้งหมด</span>
@@ -223,7 +223,7 @@ export default function StudentDetailPage() {
 
         <Link
           href={`/admin/generator?studentId=${student.id}`}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-sm"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full liquid-btn-primary text-white text-xs sm:text-sm font-semibold"
         >
           <FileText className="w-4 h-4" />
           <span>สร้าง PDF รายงาน / Portfolio นักเรียนคนนี้</span>
@@ -231,23 +231,23 @@ export default function StudentDetailPage() {
       </div>
 
       {/* Student Profile Card */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-7 space-y-4">
+      <div className="liquid-glass running-line-bottom rounded-3xl p-6 sm:p-7 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+            <div className="text-xs font-bold text-pink-600 uppercase tracking-wider">
               {student.student_code} • {student.grade_level}
             </div>
             <h1 className="text-2xl font-extrabold text-navy-950 mt-0.5">
               {student.full_name} ({student.nickname})
             </h1>
-            <div className="flex flex-wrap gap-3 mt-2 text-xs text-slate-600">
+            <div className="flex flex-wrap gap-3 mt-2 text-xs text-purple-900/75">
               <span className="inline-flex items-center gap-1">
-                <GraduationCap className="w-4 h-4 text-blue-600" />
+                <GraduationCap className="w-4 h-4 text-purple-600" />
                 <span>{student.disability_type}</span>
               </span>
               {student.guardian_contact && (
                 <span className="inline-flex items-center gap-1">
-                  <Phone className="w-4 h-4 text-emerald-600" />
+                  <Phone className="w-4 h-4 text-pink-600" />
                   <span>{student.guardian_contact}</span>
                 </span>
               )}
@@ -255,7 +255,7 @@ export default function StudentDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500">สถานะ:</span>
+            <span className="text-xs font-semibold text-purple-900/70">สถานะ:</span>
             <select
               value={student.current_status}
               onChange={(e) => handleStatusChange(e.target.value as StudentStatus)}
@@ -271,18 +271,18 @@ export default function StudentDetailPage() {
         </div>
 
         {(student.iep_goal || student.notes) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
-            <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-4 text-xs sm:text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-purple-200/60">
+            <div className="bg-purple-100/60 border border-purple-200/80 rounded-2xl p-4 text-xs sm:text-sm">
               <div className="font-bold text-navy-900 mb-1">
                 เป้าหมายการจัดการศึกษาเฉพาะบุคคล (IEP Goal)
               </div>
-              <p className="text-slate-700">{student.iep_goal || "-"}</p>
+              <p className="text-purple-950/80">{student.iep_goal || "-"}</p>
             </div>
-            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-xs sm:text-sm">
+            <div className="bg-pink-50/70 border border-pink-200/70 rounded-2xl p-4 text-xs sm:text-sm">
               <div className="font-bold text-navy-900 mb-1">
                 ข้อมูลสังเกตเพิ่มเติม / สิ่งที่ควรทราบ
               </div>
-              <p className="text-slate-700">{student.notes || "-"}</p>
+              <p className="text-purple-950/80">{student.notes || "-"}</p>
             </div>
           </div>
         )}
@@ -294,22 +294,25 @@ export default function StudentDetailPage() {
         <div className="lg:col-span-8 space-y-6">
           <form
             onSubmit={handleAddLog}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4"
+            className="liquid-glass rounded-3xl p-5 space-y-4"
           >
-            <h2 className="font-bold text-navy-950 text-sm sm:text-base flex items-center gap-2">
-              <PlusCircle className="w-4 h-4 text-blue-600" />
-              <span>บันทึก Case Timeline ใหม่</span>
-            </h2>
+            <div className="space-y-1.5">
+              <h2 className="font-bold text-navy-950 text-sm sm:text-base flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-pink-600" />
+                <span>บันทึก Case Timeline ใหม่</span>
+              </h2>
+              <div className="heading-beam-track" />
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-purple-950 mb-1">
                   ประเภทบันทึก
                 </label>
                 <select
                   value={logType}
                   onChange={(e) => setLogType(e.target.value as LogType)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white"
+                  className="w-full px-3 py-2 rounded-2xl bg-white/80 border border-purple-200 text-sm"
                 >
                   {LOG_TYPES.map((lt) => (
                     <option key={lt} value={lt}>
@@ -319,7 +322,7 @@ export default function StudentDetailPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-purple-950 mb-1">
                   วันที่บันทึก
                 </label>
                 <input
@@ -327,13 +330,13 @@ export default function StudentDetailPage() {
                   required
                   value={loggedDate}
                   onChange={(e) => setLoggedDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm"
+                  className="w-full px-3 py-2 rounded-2xl bg-white/80 border border-purple-200 text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-purple-950 mb-1">
                 พัฒนาการ / ปัญหาที่พบ *
               </label>
               <textarea
@@ -342,12 +345,12 @@ export default function StudentDetailPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="บรรยายพฤติกรรม ผลการฝึกทักษะ หรืออุปสรรคที่พบ..."
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm"
+                className="w-full px-3 py-2 rounded-2xl bg-white/80 border border-purple-200 text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-purple-950 mb-1">
                 แนวทางช่วยเหลือรายบุคคล (Action Taken)
               </label>
               <textarea
@@ -355,7 +358,7 @@ export default function StudentDetailPage() {
                 value={actionTaken}
                 onChange={(e) => setActionTaken(e.target.value)}
                 placeholder="วิธีการแก้ไข การใช้สื่อเฉพาะทาง หรือการประสานผู้ปกครอง..."
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm"
+                className="w-full px-3 py-2 rounded-2xl bg-white/80 border border-purple-200 text-sm"
               />
             </div>
 
@@ -363,7 +366,7 @@ export default function StudentDetailPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm cursor-pointer"
+                className="px-5 py-2 rounded-full liquid-btn-primary text-white text-sm font-semibold cursor-pointer"
               >
                 {submitting ? "กำลังบันทึก..." : "เพิ่มลงใน Case Timeline"}
               </button>
@@ -371,14 +374,17 @@ export default function StudentDetailPage() {
           </form>
 
           {/* Timeline List */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
-            <h2 className="font-bold text-navy-950 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-600" />
-              <span>ประวัติ Case Timeline ({logs.length} รายการ)</span>
-            </h2>
+          <div className="liquid-glass rounded-3xl p-6 space-y-5">
+            <div className="space-y-1.5">
+              <h2 className="font-bold text-navy-950 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-purple-600" />
+                <span>ประวัติ Case Timeline ({logs.length} รายการ)</span>
+              </h2>
+              <div className="heading-beam-track" />
+            </div>
 
             {logs.length === 0 ? (
-              <div className="p-8 text-center bg-slate-50 rounded-xl text-xs text-slate-500">
+              <div className="p-8 text-center bg-white/60 rounded-2xl text-xs text-purple-900/60">
                 ยังไม่มีบันทึกประวัติสำหรับนักเรียนรายนี้
               </div>
             ) : (
@@ -386,16 +392,16 @@ export default function StudentDetailPage() {
                 {logs.map((log) => (
                   <div
                     key={log.id}
-                    className="relative pl-5 border-l-2 border-blue-200 pb-4 last:pb-0"
+                    className="relative pl-5 border-l-2 border-pink-300 pb-4 last:pb-0"
                   >
-                    <span className="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-blue-600 ring-4 ring-white" />
-                    <div className="bg-slate-50 rounded-2xl border border-slate-200/80 p-4 space-y-2">
+                    <span className="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 ring-4 ring-white" />
+                    <div className="bg-white/75 rounded-2xl border border-purple-200/70 p-4 space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">
+                          <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-xs font-bold">
                             {log.log_type}
                           </span>
-                          <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                          <span className="inline-flex items-center gap-1 text-xs text-purple-900/65">
                             <Calendar className="w-3.5 h-3.5" />
                             <span>{formatDateThai(log.logged_date)}</span>
                           </span>
@@ -403,17 +409,17 @@ export default function StudentDetailPage() {
                         <button
                           type="button"
                           onClick={() => handleDeleteLog(log.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                          className="p-1.5 rounded-full text-purple-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                           title="ลบบันทึก"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
-                      <p className="text-sm text-slate-800">{log.description}</p>
+                      <p className="text-sm text-navy-950">{log.description}</p>
 
                       {log.action_taken && (
-                        <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+                        <div className="text-xs text-purple-900 bg-purple-50/90 border border-purple-200/70 rounded-xl px-3 py-2">
                           <strong>แนวทางช่วยเหลือ:</strong> {log.action_taken}
                         </div>
                       )}
@@ -427,22 +433,22 @@ export default function StudentDetailPage() {
 
         {/* Right: Linked Media from Drive */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+          <div className="liquid-glass rounded-3xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-navy-950 text-sm flex items-center gap-2">
-                <FolderOpen className="w-4 h-4 text-indigo-600" />
+                <FolderOpen className="w-4 h-4 text-pink-600" />
                 <span>สื่อและผลงานใน Drive ({media.length})</span>
               </h2>
               <Link
                 href="/admin/studio"
-                className="text-xs font-semibold text-blue-600 hover:underline"
+                className="text-xs font-semibold text-pink-600 hover:underline"
               >
                 อัปโหลดเพิ่ม →
               </Link>
             </div>
 
             {media.length === 0 ? (
-              <div className="p-6 text-center bg-slate-50 rounded-xl text-xs text-slate-500">
+              <div className="p-6 text-center bg-white/60 rounded-2xl text-xs text-purple-900/60">
                 ยังไม่มีภาพ/คลิปที่ผูกกับนักเรียนรายนี้
               </div>
             ) : (
@@ -450,25 +456,25 @@ export default function StudentDetailPage() {
                 {media.map((m) => (
                   <div
                     key={m.id}
-                    className="rounded-xl border border-slate-200 p-3 space-y-2"
+                    className="rounded-2xl bg-white/75 border border-purple-200/70 p-3 space-y-2"
                   >
                     {m.media_type === "image" && (
                       <img
                         src={getMediaStreamUrl(m.drive_file_id)}
                         alt={m.title}
-                        className="w-full h-32 object-cover rounded-lg"
+                        className="w-full h-32 object-cover rounded-xl"
                       />
                     )}
                     <div className="font-semibold text-xs text-navy-950">
                       {m.title}
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <div className="flex items-center justify-between text-[11px] text-purple-900/65">
                       <span>{m.skill_category}</span>
                       <span
                         className={`px-2 py-0.5 rounded-full font-semibold ${
                           m.is_public
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-slate-100 text-slate-600"
+                            ? "bg-pink-100 text-pink-700"
+                            : "bg-purple-100 text-purple-700"
                         }`}
                       >
                         {m.is_public ? "สาธารณะ" : "ส่วนตัว"}

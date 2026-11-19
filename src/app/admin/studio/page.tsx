@@ -310,26 +310,29 @@ export default function MediaStudioPage() {
   }, [assets, filterType, filterSkill]);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="space-y-1.5">
           <h1 className="text-2xl font-extrabold text-navy-950 flex items-center gap-2.5">
-            <Film className="w-6 h-6 text-blue-600" />
+            <span className="w-9 h-9 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-glass-pink">
+              <Film className="w-5 h-5" />
+            </span>
             <span>Media Pool &amp; Video Studio (Google Drive)</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <div className="heading-beam-track" />
+          <p className="text-xs sm:text-sm text-purple-900/70">
             อัปโหลดภาพและวิดีโอสตรีมตรงขึ้น Google Drive พร้อมห้องตัดต่อคลิป 720p และใส่ข้อความทับบนเบราว์เซอร์
           </p>
         </div>
 
-        <div className="inline-flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+        <div className="inline-flex liquid-glass p-1 rounded-full">
           <button
             type="button"
             onClick={() => setActiveTab("pool")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeTab === "pool"
-                ? "bg-navy-900 text-white"
-                : "text-slate-600 hover:text-navy-900"
+                ? "liquid-btn-primary text-white"
+                : "text-purple-800 hover:text-pink-600"
             }`}
           >
             <FolderOpen className="w-4 h-4" />
@@ -338,10 +341,10 @@ export default function MediaStudioPage() {
           <button
             type="button"
             onClick={() => setActiveTab("editor")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeTab === "editor"
-                ? "bg-navy-900 text-white"
-                : "text-slate-600 hover:text-navy-900"
+                ? "liquid-btn-primary text-white"
+                : "text-purple-800 hover:text-pink-600"
             }`}
           >
             <Scissors className="w-4 h-4" />
@@ -363,38 +366,41 @@ export default function MediaStudioPage() {
       {activeTab === "pool" && (
         <form
           onSubmit={handleDirectUpload}
-          className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5"
+          className="liquid-glass running-line-bottom rounded-3xl p-6 space-y-5"
         >
-          <h2 className="text-base font-bold text-navy-950 flex items-center gap-2">
-            <UploadCloud className="w-5 h-5 text-blue-600" />
-            <span>กล่องอัปโหลดภาพ คลิป และเอกสารขึ้น Google Drive</span>
-          </h2>
+          <div className="space-y-1.5">
+            <h2 className="text-base font-bold text-navy-950 flex items-center gap-2">
+              <UploadCloud className="w-5 h-5 text-pink-600" />
+              <span>กล่องอัปโหลดภาพ คลิป และเอกสารขึ้น Google Drive</span>
+            </h2>
+            <div className="heading-beam-track" />
+          </div>
 
           {uploadErr && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+            <div className="p-3 rounded-2xl bg-rose-50/90 border border-rose-200 text-rose-700 text-xs">
               {uploadErr}
             </div>
           )}
           {uploadMsg && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{uploadMsg}</span>
             </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            <label className="lg:col-span-5 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-50/70 transition-colors">
+            <label className="lg:col-span-5 border-2 border-dashed border-purple-300 hover:border-pink-500 rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-white/60 transition-colors">
               <input
                 type="file"
                 accept="image/*,video/*,application/pdf"
                 className="hidden"
                 onChange={(e) => handleFilePick(e.target.files?.[0] || null)}
               />
-              <CloudUpload className="w-10 h-10 text-blue-600 mb-2" />
+              <CloudUpload className="w-10 h-10 text-pink-600 mb-2" />
               <div className="text-sm font-bold text-navy-950">
                 {uploadFile ? uploadFile.name : "เลือกไฟล์ภาพ, คลิปวิดีโอ หรือ PDF"}
               </div>
-              <div className="text-xs text-slate-500 mt-1">
+              <div className="text-xs text-purple-900/65 mt-1">
                 {uploadFile
                   ? `${formatFileSize(uploadFile.size)} • ${uploadFile.type || "ไฟล์"}`
                   : "สตรีมตรงขึ้น Google Drive ไม่ผ่าน Serverless Disk"}
@@ -538,7 +544,7 @@ export default function MediaStudioPage() {
                 <button
                   type="submit"
                   disabled={!uploadFile || uploading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-semibold shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full liquid-btn-primary disabled:opacity-50 text-white text-sm font-semibold cursor-pointer"
                 >
                   {uploading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -556,14 +562,17 @@ export default function MediaStudioPage() {
       {/* Media Pool Grid */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-navy-950">
-            คลังสื่อและเอกสารทั้งหมด ({filteredAssets.length})
-          </h2>
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-navy-950">
+              คลังสื่อและเอกสารทั้งหมด ({filteredAssets.length})
+            </h2>
+            <div className="heading-beam-track" />
+          </div>
           <div className="flex flex-wrap gap-2">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs bg-white"
+              className="px-3 py-1.5 rounded-full liquid-glass-subtle text-xs text-purple-900"
             >
               <option value="all">ทุกประเภท</option>
               <option value="image">ภาพถ่าย</option>
@@ -575,7 +584,7 @@ export default function MediaStudioPage() {
             <select
               value={filterSkill}
               onChange={(e) => setFilterSkill(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs bg-white"
+              className="px-3 py-1.5 rounded-full liquid-glass-subtle text-xs text-purple-900"
             >
               <option value="all">ทุกทักษะ</option>
               {SKILL_CATEGORIES.map((sk) => (
@@ -592,7 +601,7 @@ export default function MediaStudioPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-56 rounded-2xl bg-white border border-slate-200 animate-pulse"
+                className="h-56 rounded-3xl liquid-glass animate-pulse"
               />
             ))}
           </div>
@@ -604,10 +613,10 @@ export default function MediaStudioPage() {
               return (
                 <div
                   key={asset.id}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between"
+                  className="liquid-glass running-line-bottom rounded-3xl overflow-hidden flex flex-col justify-between transition-all hover:-translate-y-0.5 hover:shadow-glass-lg"
                 >
                   <div>
-                    <div className="h-40 bg-navy-950 relative overflow-hidden flex items-center justify-center">
+                    <div className="h-40 bg-gradient-to-br from-purple-950 via-fuchsia-900 to-pink-800 relative overflow-hidden flex items-center justify-center">
                       {isImg ? (
                         <img
                           src={getMediaStreamUrl(asset.drive_file_id)}
@@ -615,58 +624,58 @@ export default function MediaStudioPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : isVid ? (
-                        <div className="text-center text-blue-200 space-y-1">
+                        <div className="text-center text-pink-100 space-y-1">
                           <Film className="w-10 h-10 mx-auto" />
                           <div className="text-xs font-semibold">วิดีโอ Google Drive</div>
                         </div>
                       ) : (
-                        <div className="text-center text-amber-200 space-y-1">
+                        <div className="text-center text-pink-100 space-y-1">
                           <FileText className="w-10 h-10 mx-auto" />
                           <div className="text-xs font-semibold">เอกสาร PDF</div>
                         </div>
                       )}
-                      <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-navy-950/80 text-white text-[10px] font-semibold">
+                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-navy-950/75 backdrop-blur-md text-white text-[10px] font-semibold border border-white/20">
                         {asset.media_type}
                       </span>
                       {asset.grade_level && (
-                        <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-white/90 text-navy-900 text-[10px] font-bold">
+                        <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-white/90 text-purple-900 text-[10px] font-bold">
                           {asset.grade_level}
                         </span>
                       )}
                     </div>
 
                     <div className="p-4 space-y-1.5">
-                      <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+                      <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-800 bg-gradient-to-r from-purple-100 to-pink-100 px-2.5 py-0.5 rounded-full">
                         {isImg ? (
-                          <ImageIcon className="w-3 h-3" />
+                          <ImageIcon className="w-3 h-3 text-pink-600" />
                         ) : isVid ? (
-                          <Film className="w-3 h-3" />
+                          <Film className="w-3 h-3 text-purple-700" />
                         ) : (
-                          <FileText className="w-3 h-3" />
+                          <FileText className="w-3 h-3 text-pink-600" />
                         )}
                         <span>{asset.skill_category}</span>
                       </div>
                       <h3 className="font-bold text-sm text-navy-950 line-clamp-1">
                         {asset.title}
                       </h3>
-                      <p className="text-xs text-slate-500 line-clamp-2">
+                      <p className="text-xs text-purple-900/65 line-clamp-2">
                         {asset.description || formatDateThai(asset.created_at)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="px-4 py-3 border-t border-purple-200/50 flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => handleTogglePublic(asset)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border cursor-pointer ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border cursor-pointer ${
                         asset.is_public
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-slate-100 text-slate-600 border-slate-200"
+                          ? "bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-pink-300"
+                          : "bg-white/70 text-purple-900/70 border-purple-200"
                       }`}
                     >
                       {asset.is_public ? (
-                        <Eye className="w-3.5 h-3.5" />
+                        <Eye className="w-3.5 h-3.5 text-pink-600" />
                       ) : (
                         <EyeOff className="w-3.5 h-3.5" />
                       )}
@@ -676,7 +685,7 @@ export default function MediaStudioPage() {
                     <button
                       type="button"
                       onClick={() => handleDeleteAsset(asset)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                      className="p-1.5 rounded-full text-purple-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                       title="ลบสื่อ"
                     >
                       <Trash2 className="w-4 h-4" />

@@ -33,11 +33,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th" className={`${sarabun.variable} ${prompt.variable}`}>
-      <body className="font-sans min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-500 selection:text-white">
+      <body className="font-sans min-h-screen flex flex-col liquid-canvas text-navy-950 selection:bg-fuchsia-500 selection:text-white relative overflow-x-hidden">
+        {/* Ambient Floating Purple-Pink Liquid Orbs */}
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 -z-10 overflow-hidden pointer-events-none no-print"
+        >
+          <div className="liquid-orb-float absolute -top-24 -left-20 w-96 h-96 rounded-full bg-fuchsia-400/20 blur-3xl" />
+          <div
+            className="liquid-orb-float absolute top-1/3 -right-24 w-[28rem] h-[28rem] rounded-full bg-purple-400/20 blur-3xl"
+            style={{ animationDelay: "-4s" }}
+          />
+          <div
+            className="liquid-orb-float absolute -bottom-24 left-1/3 w-96 h-96 rounded-full bg-pink-300/25 blur-3xl"
+            style={{ animationDelay: "-7s" }}
+          />
+        </div>
+
         <AuthProvider>
           <SetupBanner />
           <Navbar />
-          <main className="flex-1 w-full">{children}</main>
+          <main className="flex-1 w-full relative">{children}</main>
           <Footer />
         </AuthProvider>
       </body>

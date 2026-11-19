@@ -377,26 +377,27 @@ export function VideoEditorPanel({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-        <div>
+    <div className="liquid-glass running-line-bottom rounded-3xl p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200/60 pb-4">
+        <div className="space-y-1.5">
           <h2 className="text-lg font-bold text-navy-950 flex items-center gap-2">
-            <Scissors className="w-5 h-5 text-indigo-600" />
+            <Scissors className="w-5 h-5 text-pink-600" />
             <span>ห้องตัดต่อวิดีโอเบราว์เซอร์ (FFmpeg WASM • 720p MP4)</span>
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <div className="heading-beam-track" />
+          <p className="text-xs text-purple-900/70">
             ตัดหัว-ท้าย (Trim), ใส่ข้อความภาษาไทยทับ (Caption), ปรับความละเอียด 720p และ Export ส่งเข้า Drive ได้ทันทีโดยไม่ใช้ Server CPU
           </p>
         </div>
       </div>
 
       {errorMsg && (
-        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+        <div className="p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200 text-rose-700 text-xs">
           {errorMsg}
         </div>
       )}
       {uploadSuccess && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+        <div className="p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{uploadSuccess}</span>
         </div>
@@ -405,20 +406,20 @@ export function VideoEditorPanel({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Video Source & Controls */}
         <div className="lg:col-span-7 space-y-4">
-          <label className="block border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl p-5 text-center cursor-pointer transition-colors bg-slate-50/70">
+          <label className="block border-2 border-dashed border-purple-300 hover:border-pink-500 rounded-3xl p-5 text-center cursor-pointer transition-colors bg-white/60">
             <input
               type="file"
               accept="video/*"
               className="hidden"
               onChange={(e) => handleSelectVideo(e.target.files?.[0] || null)}
             />
-            <Video className="w-8 h-8 mx-auto text-blue-600 mb-1.5" />
+            <Video className="w-8 h-8 mx-auto text-pink-600 mb-1.5" />
             <div className="text-sm font-semibold text-navy-950">
               {sourceFile
                 ? `${sourceFile.name} (${formatFileSize(sourceFile.size)})`
                 : "คลิกเลือกไฟล์วิดีโอต้นฉบับจากเครื่อง (.MP4, .MOV, .WEBM)"}
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">
+            <div className="text-[11px] text-purple-900/65 mt-0.5">
               ไฟล์จะถูกประมวลผลภายในเบราว์เซอร์ของท่านโดยตรง
             </div>
           </label>
@@ -446,17 +447,17 @@ export function VideoEditorPanel({
               </div>
 
               {/* Trim Controls */}
-              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-3">
+              <div className="bg-white/70 rounded-2xl border border-purple-200/80 p-4 space-y-3">
                 <div className="flex items-center justify-between text-xs font-bold text-navy-950">
                   <span>ตัดหัว-ท้ายคลิป (Trim)</span>
-                  <span className="text-blue-600">
+                  <span className="text-pink-600">
                     ความยาวหลังตัด: {Math.max(0, trimEnd - trimStart).toFixed(1)} วินาที
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
+                    <div className="flex items-center justify-between text-xs text-purple-900/75 mb-1">
                       <span>จุดเริ่มต้น (วินาที): {trimStart.toFixed(1)}s</span>
                       <button
                         type="button"
@@ -466,7 +467,7 @@ export function VideoEditorPanel({
                             setTrimStart(Math.min(t, Math.max(0, trimEnd - 0.5)));
                           }
                         }}
-                        className="text-blue-600 font-semibold hover:underline cursor-pointer"
+                        className="text-pink-600 font-semibold hover:underline cursor-pointer"
                       >
                         ใช้เวลาปัจจุบัน
                       </button>
@@ -481,12 +482,12 @@ export function VideoEditorPanel({
                         const v = Number(e.target.value);
                         setTrimStart(Math.min(v, Math.max(0, trimEnd - 0.5)));
                       }}
-                      className="w-full accent-blue-600"
+                      className="w-full accent-pink-500"
                     />
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
+                    <div className="flex items-center justify-between text-xs text-purple-900/75 mb-1">
                       <span>จุดสิ้นสุด (วินาที): {trimEnd.toFixed(1)}s</span>
                       <button
                         type="button"
@@ -496,7 +497,7 @@ export function VideoEditorPanel({
                             setTrimEnd(Math.max(t, trimStart + 0.5));
                           }
                         }}
-                        className="text-blue-600 font-semibold hover:underline cursor-pointer"
+                        className="text-pink-600 font-semibold hover:underline cursor-pointer"
                       >
                         ใช้เวลาปัจจุบัน
                       </button>
@@ -511,16 +512,16 @@ export function VideoEditorPanel({
                         const v = Number(e.target.value);
                         setTrimEnd(Math.max(v, trimStart + 0.5));
                       }}
-                      className="w-full accent-blue-600"
+                      className="w-full accent-pink-500"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Caption Overlay */}
-              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-3">
+              <div className="bg-white/70 rounded-2xl border border-purple-200/80 p-4 space-y-3">
                 <div className="text-xs font-bold text-navy-950 flex items-center gap-1.5">
-                  <Type className="w-4 h-4 text-blue-600" />
+                  <Type className="w-4 h-4 text-pink-600" />
                   <span>ข้อความทับบนวิดีโอ (Caption Overlay) + ปรับขนาด 720p</span>
                 </div>
 
@@ -547,12 +548,12 @@ export function VideoEditorPanel({
                   type="button"
                   onClick={handleRender720p}
                   disabled={processing}
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 disabled:bg-slate-400 text-white text-sm font-semibold shadow-sm cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-500 disabled:opacity-50 text-white text-sm font-semibold shadow-glass cursor-pointer"
                 >
                   {processing ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Sparkles className="w-4 h-4 text-amber-300" />
+                    <Sparkles className="w-4 h-4 text-pink-200" />
                   )}
                   <span>
                     {processing
@@ -563,11 +564,11 @@ export function VideoEditorPanel({
 
                 {statusLog && (
                   <div className="space-y-1.5">
-                    <div className="text-[11px] text-slate-600">{statusLog}</div>
+                    <div className="text-[11px] text-purple-900/75">{statusLog}</div>
                     {processing && (
-                      <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                      <div className="w-full h-2 rounded-full bg-purple-100 overflow-hidden">
                         <div
-                          className="h-full bg-blue-600 transition-all"
+                          className="h-full bg-gradient-to-r from-purple-600 to-pink-500 transition-all"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
@@ -726,7 +727,7 @@ export function VideoEditorPanel({
                 type="button"
                 onClick={handleExportToDrive}
                 disabled={!outputFile || uploading}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-semibold shadow-md cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-full liquid-btn-primary disabled:opacity-50 text-white text-sm font-semibold cursor-pointer"
               >
                 {uploading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

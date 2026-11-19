@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
+    --background: #fbf7ff;
+    --foreground: #240540;
   }
 
   body {
@@ -16,22 +16,211 @@
   }
 }
 
+/* ==========================================================================
+   iOS 2026 Liquid Glass (Purple & Pink Prism Edition)
+   ========================================================================== */
+
+.liquid-canvas {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(236, 72, 153, 0.16), transparent 42%),
+    radial-gradient(circle at 88% 14%, rgba(168, 85, 247, 0.18), transparent 44%),
+    radial-gradient(circle at 75% 78%, rgba(244, 114, 182, 0.14), transparent 42%),
+    radial-gradient(circle at 18% 82%, rgba(139, 92, 246, 0.14), transparent 40%),
+    linear-gradient(160deg, #fcf8ff 0%, #f9f2ff 48%, #fff4fa 100%);
+}
+
+.liquid-glass {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.76) 0%,
+    rgba(253, 244, 255, 0.58) 55%,
+    rgba(255, 241, 248, 0.64) 100%
+  );
+  backdrop-filter: blur(22px) saturate(185%);
+  -webkit-backdrop-filter: blur(22px) saturate(185%);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 12px 34px -12px rgba(126, 34, 206, 0.16),
+    0 4px 14px -4px rgba(236, 72, 153, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(217, 70, 239, 0.08);
+}
+
+.liquid-glass-subtle {
+  background: rgba(255, 255, 255, 0.56);
+  backdrop-filter: blur(16px) saturate(165%);
+  -webkit-backdrop-filter: blur(16px) saturate(165%);
+  border: 1px solid rgba(243, 232, 255, 0.9);
+  box-shadow:
+    0 8px 24px -10px rgba(147, 51, 234, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.liquid-glass-nav {
+  background: linear-gradient(
+    90deg,
+    rgba(46, 16, 101, 0.82) 0%,
+    rgba(88, 28, 135, 0.8) 52%,
+    rgba(131, 24, 67, 0.8) 100%
+  );
+  backdrop-filter: blur(26px) saturate(200%);
+  -webkit-backdrop-filter: blur(26px) saturate(200%);
+  box-shadow:
+    0 10px 32px -10px rgba(88, 28, 135, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.liquid-glass-hero {
+  background: linear-gradient(
+    130deg,
+    rgba(59, 7, 100, 0.9) 0%,
+    rgba(126, 34, 206, 0.84) 48%,
+    rgba(219, 39, 119, 0.82) 100%
+  );
+  backdrop-filter: blur(26px) saturate(195%);
+  -webkit-backdrop-filter: blur(26px) saturate(195%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 24px 48px -14px rgba(126, 34, 206, 0.36),
+    0 10px 26px -10px rgba(236, 72, 153, 0.28),
+    inset 0 1px 1px rgba(255, 255, 255, 0.42);
+}
+
+.liquid-btn-primary {
+  background: linear-gradient(135deg, #9333ea 0%, #db2777 100%);
+  box-shadow:
+    0 8px 20px -6px rgba(219, 39, 119, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.liquid-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow:
+    0 12px 26px -6px rgba(219, 39, 119, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+/* ==========================================================================
+   ลูกเล่นเส้นเล็กวิ่งตามขอบล่าง / ใต้หัวข้อ (Running Light Beam)
+   ========================================================================== */
+
+@keyframes liquidBeamRun {
+  0% {
+    transform: translateX(-110%);
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(360%);
+    opacity: 0.2;
+  }
+}
+
+@keyframes liquidOrbFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(18px, -14px, 0) scale(1.06);
+  }
+}
+
+.liquid-orb-float {
+  animation: liquidOrbFloat 11s ease-in-out infinite;
+}
+
+/* เส้นเล็กวิ่งตามขอบล่างของการ์ด / แถบเมนู / Hero */
+.running-line-bottom {
+  position: relative;
+  overflow: hidden;
+}
+
+.running-line-bottom::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 32%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(216, 180, 254, 0.65) 25%,
+    rgba(244, 114, 182, 0.98) 55%,
+    rgba(255, 255, 255, 0.95) 75%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.7);
+  animation: liquidBeamRun 4.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+/* เส้นเล็กวิ่งใต้หัวข้อ (Section Heading Accent) */
+.heading-beam-track {
+  position: relative;
+  height: 2.5px;
+  width: 112px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgba(168, 85, 247, 0.25),
+    rgba(236, 72, 153, 0.22)
+  );
+  overflow: hidden;
+}
+
+.heading-beam-track::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 44%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #a855f7 30%,
+    #ec4899 65%,
+    #fdf2f8 100%
+  );
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.75);
+  animation: liquidBeamRun 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .running-line-bottom::after,
+  .heading-beam-track::after,
+  .liquid-orb-float {
+    animation: none;
+  }
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #faf5ff;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #c084fc, #f472b6);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: linear-gradient(180deg, #a855f7, #ec4899);
 }
 
 @media print {

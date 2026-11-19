@@ -394,13 +394,16 @@ function GeneratorContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
-      <div>
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+      <div className="space-y-1.5">
         <h1 className="text-2xl font-extrabold text-navy-950 flex items-center gap-2.5">
-          <FileText className="w-6 h-6 text-blue-600" />
+          <span className="w-9 h-9 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-glass-pink">
+            <FileText className="w-5 h-5" />
+          </span>
           <span>1-Click Document Generator (สร้างเอกสาร A4 PDF)</span>
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+        <div className="heading-beam-track" />
+        <p className="text-xs sm:text-sm text-purple-900/70">
           เลือกรูปแบบเอกสาร ดึงข้อมูลนักเรียน Case Timeline และรูปภาพจาก Google Drive เพื่อ Export เป็น A4 PDF บันทึกลง Drive ทันที
         </p>
       </div>
@@ -414,16 +417,16 @@ function GeneratorContent() {
               key={item.id}
               type="button"
               onClick={() => handleTemplateSelect(item.id)}
-              className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
+              className={`text-left p-4 rounded-3xl transition-all cursor-pointer ${
                 active
-                  ? "bg-navy-900 text-white border-navy-900 shadow-lg"
-                  : "bg-white text-slate-800 border-slate-200 hover:border-blue-400"
+                  ? "liquid-glass-hero running-line-bottom text-white shadow-glass-lg"
+                  : "liquid-glass text-navy-950 hover:-translate-y-0.5"
               }`}
             >
               <div className="font-bold text-sm">{item.label}</div>
               <p
                 className={`text-xs mt-1 ${
-                  active ? "text-blue-200" : "text-slate-500"
+                  active ? "text-pink-100" : "text-purple-900/70"
                 }`}
               >
                 {item.desc}
@@ -435,7 +438,7 @@ function GeneratorContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Config Form */}
-        <div className="lg:col-span-6 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <div className="lg:col-span-6 liquid-glass rounded-3xl p-6 space-y-4">
           {errorMessage && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
               {errorMessage}
@@ -583,22 +586,22 @@ function GeneratorContent() {
                       key={img.id}
                       type="button"
                       onClick={() => togglePhoto(img.id)}
-                      className={`relative rounded-xl border p-1.5 text-left transition-all cursor-pointer ${
+                      className={`relative rounded-2xl border p-1.5 text-left transition-all cursor-pointer ${
                         checked
-                          ? "border-blue-600 ring-2 ring-blue-500/30 bg-blue-50"
-                          : "border-slate-200 hover:border-slate-300 bg-white"
+                          ? "border-pink-500 ring-2 ring-pink-400/40 bg-pink-50/90"
+                          : "border-purple-200/80 hover:border-pink-300 bg-white/80"
                       }`}
                     >
                       <img
                         src={getMediaStreamUrl(img.drive_file_id)}
                         alt={img.title}
-                        className="w-full h-20 object-cover rounded-lg"
+                        className="w-full h-20 object-cover rounded-xl"
                       />
                       <div className="text-[11px] font-medium text-navy-950 truncate mt-1">
                         {img.title}
                       </div>
                       {checked && (
-                        <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
+                        <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 text-white text-[10px] font-bold flex items-center justify-center shadow">
                           ✓
                         </span>
                       )}
@@ -637,12 +640,12 @@ function GeneratorContent() {
               type="button"
               onClick={handlePreviewPdf}
               disabled={generating}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold shadow-sm cursor-pointer"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white/85 hover:bg-white text-purple-900 border border-purple-300 text-sm font-semibold shadow-sm cursor-pointer transition-all"
             >
               {generating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin text-pink-600" />
               ) : (
-                <Sparkles className="w-4 h-4 text-amber-300" />
+                <Sparkles className="w-4 h-4 text-pink-500" />
               )}
               <span>{generating ? "กำลังจัดหน้า A4..." : "สร้างตัวอย่าง A4 PDF"}</span>
             </button>
@@ -651,7 +654,7 @@ function GeneratorContent() {
               type="button"
               onClick={handleSaveToDrive}
               disabled={uploading || generating}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-md cursor-pointer"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full liquid-btn-primary text-white text-sm font-semibold cursor-pointer"
             >
               {uploading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -666,14 +669,14 @@ function GeneratorContent() {
         </div>
 
         {/* Right Live A4 Preview */}
-        <div className="lg:col-span-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[620px]">
-          <div className="px-5 py-3.5 bg-navy-900 text-white flex items-center justify-between">
+        <div className="lg:col-span-6 liquid-glass rounded-3xl overflow-hidden flex flex-col min-h-[620px]">
+          <div className="px-5 py-3.5 liquid-glass-nav running-line-bottom text-white flex items-center justify-between">
             <div className="text-sm font-bold">ตัวอย่างเอกสาร A4 PDF</div>
             {pdfPreviewUrl && (
               <a
                 href={pdfPreviewUrl}
                 download={`${template}.pdf`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-btn-primary text-xs font-semibold"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>ดาวน์โหลด PDF</span>
@@ -681,7 +684,7 @@ function GeneratorContent() {
             )}
           </div>
 
-          <div className="flex-1 bg-slate-100 flex items-center justify-center">
+          <div className="flex-1 bg-purple-50/40 flex items-center justify-center">
             {pdfPreviewUrl ? (
               <iframe
                 src={pdfPreviewUrl}
@@ -689,9 +692,9 @@ function GeneratorContent() {
                 className="w-full h-full min-h-[580px] border-0"
               />
             ) : (
-              <div className="p-8 text-center space-y-2 text-slate-500 max-w-sm">
-                <FileText className="w-12 h-12 mx-auto text-slate-300" />
-                <div className="text-sm font-semibold text-slate-700">
+              <div className="p-8 text-center space-y-2 text-purple-900/65 max-w-sm">
+                <FileText className="w-12 h-12 mx-auto text-pink-300" />
+                <div className="text-sm font-semibold text-navy-950">
                   ยังไม่ได้สร้างตัวอย่างเอกสาร
                 </div>
                 <p className="text-xs">
