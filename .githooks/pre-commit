@@ -1,0 +1,47 @@
+#!/bin/sh
+# Pre-commit hook ป้องกันเผลอ commit ไฟล์ .env หรือไฟล์คีย์ลับขึ้น GitHub
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$STAGED_FILES" ] && exit 0
+
+BLOCKED=0
+
+for FILE in $STAGED_FILES; do
+  BASENAME=$(basename "$FILE")
+
+  # 1. บล็อกไฟล์ .env ทุกชนิด ยกเว้น .env.example
+  case "$BASENAME" in
+    .env.example)
+      ;;
+    .env|.env.*|*.env)
+      echo "❌ [BLOCKED] ห้าม commit ไฟล์ environment: $FILE"
+      BLOCKED=1
+      ;;
+  esac
+
+  # 2. บล็อกไฟล์คีย์ Google Service Account / ใบรับรอง / credentials
+  case "$BASENAME" in
+    *.pem|*.key|*.p12|*.pfx|*.json.key|*service-account*.json|*service_account*.json|*credentials*.json|google-drive-key*.json)
+      echo "❌ [BLOCKED] ห้าม commit ไฟล์คีย์ลับ: $FILE"
+      BLOCKED=1
+      ;;
+  esac
+
+  # 3. ตรวจเนื้อหาไฟล์ที่กำลังจะ commit ว่ามี Private Key จริงปะปนหรือไม่
+  if [ "$BASENAME" != ".env.example" ] && [ "$FILE" != ".githooks/pre-commit" ]; then
+    if git show ":$FILE" 2>/dev/null | grep -qE "BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY"; then
+      if ! git show ":$FILE" 2>/dev/null | grep -q "YOUR_PRIVATE_KEY_HERE"; then
+        echo "❌ [BLOCKED] พบ Private Key ในไฟล์: $FILE"
+        BLOCKED=1
+      fi
+    fi
+  fi
+done
+
+if [ "$BLOCKED" -ne 0 ]; then
+  echo ""
+  echo "⚠️  ยกเลิกการ commit เพื่อความปลอดภัย (ใช้คำสั่ง 'git reset HEAD <ไฟล์>' เพื่อนำไฟล์ออก)"
+  exit 1
+fi
+
+exit 0

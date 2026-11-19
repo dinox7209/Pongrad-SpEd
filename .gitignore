@@ -1,0 +1,48 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/cache
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+*.key
+*.p12
+*.pfx
+*.json.key
+
+# Google Service Account & secret credentials
+*service-account*.json
+*service_account*.json
+*credentials*.json
+google-drive-key*.json
+secrets/
+
+# environment files (ป้องกันอัพไฟล์ .env ขึ้น GitHub ยกเว้นไฟล์ตัวอย่าง .env.example)
+.env
+.env.*
+!.env.example
+*.env
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
