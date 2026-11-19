@@ -2,11 +2,14 @@ import React from "react";
 import {
   Document,
   Page,
-  Text,
   View,
   StyleSheet,
   Image as PdfImage,
 } from "@react-pdf/renderer";
+import {
+  ThaiText as Text,
+  normalizeThaiPdfText,
+} from "@/components/pdf/ThaiPdfPrimitives";
 import {
   DEVELOPMENT_SUBJECTS,
   SCHOOL_INFO,
@@ -217,9 +220,10 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   signCol: {
-    width: "32%",
+    width: "33%",
     alignItems: "center",
     textAlign: "center",
+    paddingHorizontal: 2,
   },
   signLine: {
     fontSize: 8.2,
@@ -371,7 +375,7 @@ export function DevelopmentPlanPdfDocument({
   );
 
   return (
-    <Document title={`${reportTitle} ปีการศึกษา ${academicYear}`}>
+    <Document title={normalizeThaiPdfText(`${reportTitle} ปีการศึกษา ${academicYear}`)}>
       {/* Executive Cohort Summary Cover (when multi-student report) */}
       {includeSummaryCover && plans.length > 0 && (
         <Page size="A4" style={styles.page}>

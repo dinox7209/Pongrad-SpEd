@@ -2,12 +2,15 @@ import React from "react";
 import {
   Document,
   Page,
-  Text,
   View,
   StyleSheet,
   Image as PdfImage,
   Font,
 } from "@react-pdf/renderer";
+import {
+  ThaiText as Text,
+  normalizeThaiPdfText,
+} from "@/components/pdf/ThaiPdfPrimitives";
 import { Student, StudentLog, SCHOOL_INFO } from "@/types/database";
 import { formatDateThai } from "@/lib/utils";
 
@@ -333,7 +336,7 @@ export function SpEdPdfDocument({ payload }: { payload: SpEdPdfPayload }) {
 
   if (template === "cover") {
     return (
-      <Document title={documentTitle}>
+      <Document title={normalizeThaiPdfText(documentTitle)}>
         <Page size="A4" style={styles.page}>
           <View style={styles.coverFrame}>
             <View style={styles.coverBanner}>
@@ -409,7 +412,7 @@ export function SpEdPdfDocument({ payload }: { payload: SpEdPdfPayload }) {
 
   if (template === "newsletter") {
     return (
-      <Document title={documentTitle}>
+      <Document title={normalizeThaiPdfText(documentTitle)}>
         <Page size="A4" style={styles.page}>
           <View style={styles.masthead}>
             <View style={styles.mastheadTop}>
@@ -481,7 +484,7 @@ export function SpEdPdfDocument({ payload }: { payload: SpEdPdfPayload }) {
 
   if (template === "portfolio") {
     return (
-      <Document title={documentTitle}>
+      <Document title={normalizeThaiPdfText(documentTitle)}>
         <Page size="A4" style={styles.page}>
           <View style={styles.docHeader}>
             <View>
@@ -570,7 +573,7 @@ export function SpEdPdfDocument({ payload }: { payload: SpEdPdfPayload }) {
 
   // Default: "progress_report"
   return (
-    <Document title={documentTitle}>
+    <Document title={normalizeThaiPdfText(documentTitle)}>
       <Page size="A4" style={styles.page}>
         <View style={styles.docHeader}>
           <View>
