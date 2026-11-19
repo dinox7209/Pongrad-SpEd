@@ -577,14 +577,17 @@ CREATE POLICY "Admins manage brand_assets"
   USING (public.is_admin(auth.uid()))
   WITH CHECK (public.is_admin(auth.uid()));
 
--- 8. Seed ช่องโลโก้หลักของระบบ 5 รายการ
+-- 8. Seed ช่องโลโก้หลักที่ใช้งานจริง 3 รายการ (ไอคอนระบบ, โลโก้โรงเรียน, โลโก้ศูนย์การศึกษาพิเศษฯ)
+DELETE FROM public.brand_assets
+WHERE slot_key IN ('mou_seal', 'showcase_badge') AND COALESCE(image_url, '') = '';
+
 INSERT INTO public.brand_assets (
   slot_key, title, description, category, placement, image_url, default_url, display_order, is_core, is_active
 ) VALUES
   (
     'app_icon',
-    'ไอคอนระบบ & แถบเมนูด้านบน / หน้าเข้าสู่ระบบ',
-    'แสดงที่มุมซ้ายแถบเมนูด้านบน หน้าเข้าสู่ระบบ และไอคอนแท็บเบราว์เซอร์ (ปิดไว้ = ใช้ไอคอนหมวกปริญญาเริ่มต้น)',
+    'ไอคอนระบบ (แถบเมนู / หน้าเข้าสู่ระบบ / แท็บเว็บ)',
+    'แสดงที่มุมซ้ายแถบเมนูด้านบน หน้าเข้าสู่ระบบ และไอคอนแท็บเบราว์เซอร์',
     'system_icon',
     'header',
     '/images/logo-wat-pongrad.png',
@@ -596,7 +599,7 @@ INSERT INTO public.brand_assets (
   (
     'school_logo',
     'โลโก้โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร)',
-    'ตราสัญลักษณ์หลักของสถานศึกษา แสดงบนหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และหัวรายงาน PDF',
+    'ใช้ในหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และรายงาน PDF',
     'school',
     'all',
     '/images/logo-wat-pongrad.png',
@@ -608,7 +611,7 @@ INSERT INTO public.brand_assets (
   (
     'partner_logo',
     'โลโก้ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี',
-    'ตราสัญลักษณ์หน่วยงานร่วมดำเนินงาน แสดงบนหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และหัวรายงาน PDF',
+    'ใช้ในหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และรายงาน PDF',
     'partner',
     'all',
     '/images/logo-sped-chanthaburi.png',
@@ -616,29 +619,5 @@ INSERT INTO public.brand_assets (
     3,
     true,
     true
-  ),
-  (
-    'mou_seal',
-    'ตราประทับ / โลโก้เสริมหน้าบันทึกข้อตกลง MOU',
-    'ตราสัญลักษณ์เสริมบริเวณหัวเอกสาร MOU (เช่น ตราโครงการ หรือตรา สพฐ. เปิด/ปิดได้อิสระ)',
-    'mou',
-    'mou',
-    '',
-    '',
-    4,
-    true,
-    false
-  ),
-  (
-    'showcase_badge',
-    'โลโก้ / ตราโครงการประจำหน้าเผยแพร่ผลงานสาธารณะ',
-    'แสดงประกอบส่วนหัวหน้าเผยแพร่ผลงานสาธารณะ (/showcase)',
-    'showcase',
-    'showcase',
-    '',
-    '',
-    5,
-    true,
-    false
   )
 ON CONFLICT (slot_key) DO NOTHING;

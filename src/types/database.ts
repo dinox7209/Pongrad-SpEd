@@ -467,37 +467,18 @@ export const BRAND_CATEGORY_META: Record<
 export const BRAND_PLACEMENT_OPTIONS: {
   value: BrandPlacement;
   label: string;
-  desc: string;
 }[] = [
   {
+    value: "all",
+    label: "แสดงทั้งหน้า MOU และหน้าสาธารณะ",
+  },
+  {
     value: "mou",
-    label: "แสดงในหน้า MOU (/mou)",
-    desc: "แสดงในส่วนตราสัญลักษณ์ความร่วมมือและภาคีบนหน้า MOU",
+    label: "แสดงเฉพาะหน้า MOU (/mou)",
   },
   {
     value: "showcase",
-    label: "แสดงในหน้าสาธารณะ (/showcase)",
-    desc: "แสดงในส่วนภาคีความร่วมมือหรือแบนเนอร์หน้าสาธารณะ",
-  },
-  {
-    value: "footer",
-    label: "แสดงที่ส่วนท้ายเว็บไซต์ (Footer)",
-    desc: "แสดงเป็นแถบตราสัญลักษณ์หน่วยงานท้ายเว็บทุกหน้า",
-  },
-  {
-    value: "all",
-    label: "แสดงทุกหน้าสาธารณะ (MOU + Showcase + Footer)",
-    desc: "ปรากฏครบทุกหน้าสาธารณะที่รองรับตราสัญลักษณ์เพิ่มเติม",
-  },
-  {
-    value: "header",
-    label: "ส่วนหัวระบบ & แถบเมนู (Header)",
-    desc: "ใช้เป็นไอคอน/ตรากำกับส่วนหัวระบบ",
-  },
-  {
-    value: "custom",
-    label: "เก็บในคลังโลโก้ (เลือกใช้งานภายหลัง)",
-    desc: "จัดเก็บไว้ในคลังระบบหลังบ้านเพื่อสลับใช้งานได้ตลอด",
+    label: "แสดงเฉพาะหน้าสาธารณะ (/showcase)",
   },
 ];
 
@@ -505,17 +486,15 @@ export const CORE_BRAND_SLOT_KEYS = [
   "app_icon",
   "school_logo",
   "partner_logo",
-  "mou_seal",
-  "showcase_badge",
 ] as const;
 
 export const DEFAULT_BRAND_ASSETS: BrandAsset[] = [
   {
     id: "brand-core-app-icon",
     slot_key: "app_icon",
-    title: "ไอคอนระบบ & แถบเมนูด้านบน / หน้าเข้าสู่ระบบ",
+    title: "ไอคอนระบบ (แถบเมนู / หน้าเข้าสู่ระบบ / แท็บเว็บ)",
     description:
-      "แสดงที่มุมซ้ายแถบเมนูด้านบน หน้าเข้าสู่ระบบ และไอคอนแท็บเบราว์เซอร์ (ปิดไว้ = ใช้ไอคอนหมวกปริญญาเริ่มต้น)",
+      "แสดงที่มุมซ้ายแถบเมนูด้านบน หน้าเข้าสู่ระบบ และไอคอนแท็บเบราว์เซอร์",
     category: "system_icon",
     placement: "header",
     image_url: "/images/logo-wat-pongrad.png",
@@ -529,8 +508,7 @@ export const DEFAULT_BRAND_ASSETS: BrandAsset[] = [
     id: "brand-core-school-logo",
     slot_key: "school_logo",
     title: "โลโก้โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร)",
-    description:
-      "ตราสัญลักษณ์หลักของสถานศึกษา แสดงบนหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และหัวรายงาน PDF",
+    description: "ใช้ในหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และรายงาน PDF",
     category: "school",
     placement: "all",
     image_url: "/images/logo-wat-pongrad.png",
@@ -544,8 +522,7 @@ export const DEFAULT_BRAND_ASSETS: BrandAsset[] = [
     id: "brand-core-partner-logo",
     slot_key: "partner_logo",
     title: "โลโก้ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี",
-    description:
-      "ตราสัญลักษณ์หน่วยงานร่วมดำเนินงาน แสดงบนหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และหัวรายงาน PDF",
+    description: "ใช้ในหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และรายงาน PDF",
     category: "partner",
     placement: "all",
     image_url: "/images/logo-sped-chanthaburi.png",
@@ -553,35 +530,6 @@ export const DEFAULT_BRAND_ASSETS: BrandAsset[] = [
     display_order: 3,
     is_core: true,
     is_active: true,
-    created_at: "2026-11-01T08:00:00Z",
-  },
-  {
-    id: "brand-core-mou-seal",
-    slot_key: "mou_seal",
-    title: "ตราประทับ / โลโก้เสริมหน้าบันทึกข้อตกลง MOU",
-    description:
-      "ตราสัญลักษณ์เสริมบริเวณหัวเอกสาร MOU (เช่น ตราโครงการ หรือตรา สพฐ. เปิด/ปิดได้อิสระ)",
-    category: "mou",
-    placement: "mou",
-    image_url: "",
-    default_url: "",
-    display_order: 4,
-    is_core: true,
-    is_active: false,
-    created_at: "2026-11-01T08:00:00Z",
-  },
-  {
-    id: "brand-core-showcase-badge",
-    slot_key: "showcase_badge",
-    title: "โลโก้ / ตราโครงการประจำหน้าเผยแพร่ผลงานสาธารณะ",
-    description: "แสดงประกอบส่วนหัวหน้าเผยแพร่ผลงานสาธารณะ (/showcase)",
-    category: "showcase",
-    placement: "showcase",
-    image_url: "",
-    default_url: "",
-    display_order: 5,
-    is_core: true,
-    is_active: false,
     created_at: "2026-11-01T08:00:00Z",
   },
 ];

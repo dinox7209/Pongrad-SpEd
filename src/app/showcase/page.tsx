@@ -53,12 +53,7 @@ function resolvePdfPreviewSrc(asset: MediaAsset): string {
 
 export default function PublicShowcasePage() {
   const { isConfigured, isAdmin } = useAuth();
-  const {
-    schoolLogoUrl,
-    partnerLogoUrl,
-    showcaseBadgeUrl,
-    getExtraAssets,
-  } = useBrandAssets();
+  const { schoolLogoUrl, partnerLogoUrl, getExtraAssets } = useBrandAssets();
   const extraShowcaseAssets = getExtraAssets("showcase");
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [publicTeam, setPublicTeam] = useState<PublicTeamMember[]>([]);
@@ -181,15 +176,7 @@ export default function PublicShowcasePage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3 flex-1 min-w-0">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md text-pink-100 text-xs font-semibold border border-white/25">
-              {showcaseBadgeUrl ? (
-                <img
-                  src={showcaseBadgeUrl}
-                  alt="ตราโครงการ"
-                  className="w-4 h-4 rounded object-contain bg-white/90 p-0.5 shrink-0"
-                />
-              ) : (
-                <Sparkles className="w-3.5 h-3.5 text-pink-200 shrink-0" />
-              )}
+              <Sparkles className="w-3.5 h-3.5 text-pink-200 shrink-0" />
               <span className="truncate">
                 ความร่วมมือ {SCHOOL_INFO.name} × {SCHOOL_INFO.partnerName}
               </span>

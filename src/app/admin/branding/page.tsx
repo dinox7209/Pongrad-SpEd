@@ -11,13 +11,10 @@ import {
   processBrandImageFile,
 } from "@/lib/brand-utils";
 import {
-  BRAND_CATEGORY_META,
   BRAND_PLACEMENT_OPTIONS,
   BrandAsset,
-  BrandCategory,
   BrandPlacement,
   CORE_BRAND_SLOT_KEYS,
-  SCHOOL_INFO,
 } from "@/types/database";
 import {
   CheckCircle2,
@@ -25,14 +22,11 @@ import {
   Eye,
   EyeOff,
   Globe,
-  GraduationCap,
   Handshake,
-  ImagePlus,
   Loader2,
   Palette,
   Plus,
   RotateCcw,
-  Sparkles,
   Trash2,
   Upload,
   X,
@@ -45,7 +39,6 @@ interface BrandFormState {
   slot_key: string;
   title: string;
   description: string;
-  category: BrandCategory;
   placement: BrandPlacement;
   image_url: string;
   default_url: string;
@@ -59,8 +52,7 @@ function createEmptyCustomForm(nextOrder: number): BrandFormState {
     slot_key: `custom_${Date.now()}`,
     title: "",
     description: "",
-    category: "mou",
-    placement: "mou",
+    placement: "all",
     image_url: "",
     default_url: "",
     display_order: nextOrder,
@@ -71,20 +63,10 @@ function createEmptyCustomForm(nextOrder: number): BrandFormState {
 
 export default function AdminBrandingPage() {
   const { isConfigured, user } = useAuth();
-  const {
-    assets,
-    loading,
-    appIconUrl,
-    schoolLogoUrl,
-    partnerLogoUrl,
-    mouSealUrl,
-    getExtraAssets,
-    setBrandAssetsState,
-  } = useBrandAssets();
+  const { assets, loading, setBrandAssetsState } = useBrandAssets();
 
-  const [placementFilter, setPlacementFilter] = useState<string>("all");
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState<BrandFormState>(createEmptyCustomForm(6));
+  const [form, setForm] = useState<BrandFormState>(createEmptyCustomForm(4));
   const [processingImg, setProcessingImg] = useState(false);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -102,15 +84,15 @@ export default function AdminBrandingPage() {
   const customAssets = useMemo(
     () =>
       assets
-        .filter((a) => !CORE_SET.has(a.slot_key))
         .filter(
-          (a) => placementFilter === "all" || a.placement === placementFilter
+          (a) =>
+            !CORE_SET.has(a.slot_key) &&
+            a.slot_key !== "mou_seal" &&
+            a.slot_key !== "showcase_badge"
         )
         .sort((a, b) => (a.display_order || 99) - (b.display_order || 99)),
-    [assets, placementFilter]
+    [assets]
   );
-
-  const mouExtraPreview = getExtraAssets("mou");
 
   const persistAssetsState = (next: BrandAsset[]) => {
     setBrandAssetsState(next);
@@ -122,7 +104,7 @@ export default function AdminBrandingPage() {
   const openAddCustomModal = () => {
     const maxOrder = assets.reduce(
       (max, a) => Math.max(max, a.display_order || 0),
-      5
+      3
     );
     setForm(createEmptyCustomForm(maxOrder + 1));
     setErrorMsg("");
@@ -135,8 +117,10 @@ export default function AdminBrandingPage() {
       slot_key: asset.slot_key,
       title: asset.title,
       description: asset.description || "",
-      category: asset.category,
-      placement: asset.placement,
+      placement:
+        asset.placement === "mou" || asset.placement === "showcase"
+          ? asset.placement
+          : "all",
       image_url: asset.image_url || "",
       default_url: asset.default_url || "",
       display_order: asset.display_order || 1,
@@ -171,39 +155,10 @@ export default function AdminBrandingPage() {
     }
   };
 
-  const handleQuickUploadForAsset = async (
-    asset: BrandAsset,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setBusyId(asset.id);
-    setStatusMessage("");
-    setErrorMsg("");
-    try {
-      const dataUri = await processBrandImageFile(file, 512);
-      await updateAssetRecord(asset, {
-        image_url: dataUri,
-        is_active: true,
-      });
-      setStatusMessage(`อัปโหลดโลโก้ "${asset.title}" เรียบร้อยแล้ว`);
-    } catch (err) {
-      alert(
-        err instanceof Error ? err.message : "อัปโหลดรูปภาพไม่สำเร็จ"
-      );
-    } finally {
-      setBusyId(null);
-    }
-  };
-
   const updateAssetRecord = async (
     target: BrandAsset,
     patch: Partial<
-      Pick<
-        BrandAsset,
-        "title" | "description" | "category" | "placement" | "image_url" | "display_order" | "is_active"
-      >
+      Pick<BrandAsset, "title" | "description" | "placement" | "image_url" | "display_order" | "is_active">
     >
   ) => {
     const now = new Date().toISOString();
@@ -212,7 +167,7 @@ export default function AdminBrandingPage() {
         slot_key: target.slot_key,
         title: patch.title ?? target.title,
         description: patch.description ?? target.description,
-        category: patch.category ?? target.category,
+        category: target.category || "custom",
         placement: patch.placement ?? target.placement,
         image_url: patch.image_url ?? target.image_url,
         default_url: target.default_url || "",
@@ -258,34 +213,44 @@ export default function AdminBrandingPage() {
     persistAssetsState(next);
   };
 
+  const handleQuickUpload = async (
+    asset: BrandAsset,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setBusyId(asset.id);
+    setStatusMessage("");
+    try {
+      const dataUri = await processBrandImageFile(file, 512);
+      await updateAssetRecord(asset, { image_url: dataUri, is_active: true });
+      setStatusMessage(`อัปเดต "${asset.title}" เรียบร้อยแล้ว`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "อัปโหลดรูปภาพไม่สำเร็จ");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const handleToggleActive = async (asset: BrandAsset) => {
     setBusyId(asset.id);
     setStatusMessage("");
     try {
       const nextActive = !asset.is_active;
-      if (nextActive && !asset.image_url?.trim()) {
-        openEditModal({ ...asset, is_active: true });
-        return;
-      }
       await updateAssetRecord(asset, { is_active: nextActive });
       setStatusMessage(
         `${nextActive ? "เปิด" : "ปิด"}การแสดงผล "${asset.title}" แล้ว`
       );
     } catch (err) {
-      alert(
-        err instanceof Error ? err.message : "ปรับสถานะไม่สำเร็จ"
-      );
+      alert(err instanceof Error ? err.message : "ปรับสถานะไม่สำเร็จ");
     } finally {
       setBusyId(null);
     }
   };
 
   const handleResetDefault = async (asset: BrandAsset) => {
-    if (
-      !confirm(
-        `ต้องการคืนค่าโลโก้ "${asset.title}" กลับเป็นค่าเริ่มต้นใช่หรือไม่?`
-      )
-    ) {
+    if (!confirm(`ต้องการคืนค่า "${asset.title}" กลับเป็นค่าเริ่มต้นใช่หรือไม่?`)) {
       return;
     }
     setBusyId(asset.id);
@@ -293,10 +258,9 @@ export default function AdminBrandingPage() {
     try {
       await updateAssetRecord(asset, {
         image_url: asset.default_url || "",
-        is_active:
-          asset.slot_key === "school_logo" || asset.slot_key === "partner_logo",
+        is_active: asset.slot_key !== "app_icon",
       });
-      setStatusMessage(`คืนค่าเริ่มต้น "${asset.title}" เรียบร้อยแล้ว`);
+      setStatusMessage(`คืนค่าเริ่มต้น "${asset.title}" แล้ว`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "คืนค่าเริ่มต้นไม่สำเร็จ");
     } finally {
@@ -308,11 +272,11 @@ export default function AdminBrandingPage() {
     e.preventDefault();
     setErrorMsg("");
     if (!form.title.trim()) {
-      setErrorMsg("กรุณาระบุชื่อโลโก้หรือตราสัญลักษณ์");
+      setErrorMsg("กรุณาระบุชื่อโลโก้หรือหน่วยงาน");
       return;
     }
-    if (!form.is_core && !form.image_url.trim()) {
-      setErrorMsg("กรุณาอัปโหลดรูปภาพหรือระบุลิงก์โลโก้");
+    if (!form.image_url.trim()) {
+      setErrorMsg("กรุณาอัปโหลดรูปภาพหรือระบุลิงก์รูปภาพ");
       return;
     }
 
@@ -324,8 +288,18 @@ export default function AdminBrandingPage() {
           slot_key: form.slot_key.trim(),
           title: form.title.trim(),
           description: form.description.trim(),
-          category: form.category,
-          placement: form.placement,
+          category: form.is_core
+            ? form.slot_key === "app_icon"
+              ? "system_icon"
+              : form.slot_key === "school_logo"
+              ? "school"
+              : "partner"
+            : "custom",
+          placement: form.is_core
+            ? form.slot_key === "app_icon"
+              ? "header"
+              : "all"
+            : form.placement,
           image_url: form.image_url.trim(),
           default_url: form.default_url.trim(),
           display_order: Number(form.display_order) || 1,
@@ -343,7 +317,7 @@ export default function AdminBrandingPage() {
         if (error) {
           if (error.code === "42P01" || error.code === "PGRST205") {
             throw new Error(
-              "ยังไม่ได้สร้างตาราง brand_assets ใน Supabase กรุณานำ supabase/schema.sql ไป Run ใน SQL Editor"
+              "ยังไม่ได้สร้างตาราง brand_assets ใน Supabase (กรุณานำ supabase/schema.sql ไป Run ใน SQL Editor ก่อน)"
             );
           }
           throw new Error(error.message);
@@ -371,8 +345,7 @@ export default function AdminBrandingPage() {
                   ...a,
                   title: form.title.trim(),
                   description: form.description.trim(),
-                  category: form.category,
-                  placement: form.placement,
+                  placement: form.is_core ? a.placement : form.placement,
                   image_url: form.image_url.trim(),
                   display_order: Number(form.display_order) || 1,
                   is_active: form.is_active,
@@ -386,7 +359,7 @@ export default function AdminBrandingPage() {
             slot_key: form.slot_key,
             title: form.title.trim(),
             description: form.description.trim(),
-            category: form.category,
+            category: "custom",
             placement: form.placement,
             image_url: form.image_url.trim(),
             default_url: "",
@@ -401,11 +374,11 @@ export default function AdminBrandingPage() {
         persistAssetsState(next);
       }
 
-      setStatusMessage(`บันทึกข้อมูล "${form.title.trim()}" เรียบร้อยแล้ว`);
+      setStatusMessage(`บันทึก "${form.title.trim()}" เรียบร้อยแล้ว`);
       setModalOpen(false);
     } catch (err) {
       setErrorMsg(
-        err instanceof Error ? err.message : "บันทึกข้อมูลโลโก้ไม่สำเร็จ"
+        err instanceof Error ? err.message : "บันทึกข้อมูลไม่สำเร็จ"
       );
     } finally {
       setSaving(false);
@@ -435,28 +408,20 @@ export default function AdminBrandingPage() {
   };
 
   return (
-    <div className="min-h-screen py-7 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-7">
-      {/* Hero Banner */}
+    <div className="min-h-screen py-7 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-7">
+      {/* Header Banner */}
       <div className="liquid-glass-hero running-line-bottom rounded-[2rem] text-white p-6 sm:p-8">
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2.5 flex-1 min-w-0">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 text-pink-100 text-xs font-semibold border border-white/25 backdrop-blur-md">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="space-y-2 flex-1 min-w-0">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 text-pink-100 text-xs font-semibold border border-white/25">
               <Palette className="w-3.5 h-3.5 shrink-0" />
-              <span>ศูนย์จัดการโลโก้ ไอคอนระบบ และตราสัญลักษณ์</span>
+              <span>จัดการโลโก้และไอคอนระบบ (เฉพาะส่วนที่ใช้งานจริง)</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              จัดการโลโก้ต่างๆ ไอคอน โลโก้ MOU และภาคีเพิ่มเติม
+              โลโก้ ไอคอนเว็บ และตราสัญลักษณ์หน้า MOU
             </h1>
-            <p className="text-purple-100/95 text-sm max-w-3xl leading-relaxed">
-              อัปโหลดเปลี่ยน{" "}
-              <strong className="text-white">
-                ไอคอนระบบ, โลโก้โรงเรียน, โลโก้ศูนย์ฯ, ตราหน้า MOU
-              </strong>{" "}
-              หรือ{" "}
-              <strong className="text-pink-100">
-                เพิ่มตราสัญลักษณ์หน่วยงานใหม่
-              </strong>{" "}
-              พร้อมเลือกเปิด-ปิดและกำหนดตำแหน่งแสดงผลบนหน้าสาธารณะ MOU Footer และรายงาน PDF ได้ทันที
+            <p className="text-purple-100/95 text-sm max-w-2xl leading-relaxed">
+              เปลี่ยนรูปโลโก้หลักทั้ง 3 จุดที่ใช้จริงทั่วทั้งระบบ (ไอคอนเว็บ, โลโก้โรงเรียน, โลโก้ศูนย์การศึกษาพิเศษ) และเพิ่มโลโก้หน่วยงานเพิ่มเติมสำหรับหน้า MOU หรือหน้าสาธารณะได้ตามต้องการ
             </p>
           </div>
 
@@ -464,17 +429,17 @@ export default function AdminBrandingPage() {
             <button
               type="button"
               onClick={openAddCustomModal}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-purple-950 hover:bg-pink-50 text-xs sm:text-sm font-bold shadow-glass-pink cursor-pointer transition-all hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white text-purple-950 hover:bg-pink-50 text-xs sm:text-sm font-bold shadow-glass-pink cursor-pointer transition-all hover:scale-[1.02]"
             >
               <Plus className="w-4 h-4 text-pink-600" />
-              <span>เพิ่มโลโก้ / ไอคอนใหม่</span>
+              <span>เพิ่มโลโก้หน่วยงานเพิ่มเติม</span>
             </button>
             <Link
               href="/mou"
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs sm:text-sm font-semibold border border-white/25 transition-colors"
             >
               <Handshake className="w-4 h-4 text-pink-200" />
-              <span>ดูผลบนหน้า MOU</span>
+              <span>หน้า MOU</span>
             </Link>
             <Link
               href="/showcase"
@@ -494,96 +459,11 @@ export default function AdminBrandingPage() {
         </div>
       )}
 
-      {/* Live Preview Strip */}
-      <div className="liquid-glass rounded-3xl p-5 sm:p-6 space-y-4">
-        <div className="space-y-1">
-          <h2 className="font-bold text-navy-950 text-sm sm:text-base flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-pink-600" />
-            <span>ตัวอย่างการแสดงผลโลโก้ปัจจุบันในระบบ</span>
-          </h2>
-          <div className="heading-beam-track" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Mini Navbar Preview */}
-          <div className="rounded-2xl bg-gradient-to-r from-purple-900 via-purple-800 to-pink-800 p-4 text-white flex items-center gap-3 shadow-sm">
-            <div className="w-10 h-10 rounded-2xl bg-white/95 p-1 flex items-center justify-center border border-white/40 shrink-0 overflow-hidden">
-              {appIconUrl ? (
-                <img
-                  src={appIconUrl}
-                  alt="App Icon"
-                  className="max-h-full w-auto object-contain"
-                />
-              ) : (
-                <GraduationCap className="w-5 h-5 text-purple-700" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-bold truncate">
-                แถบเมนูด้านบน &amp; หน้าเข้าสู่ระบบ
-              </div>
-              <div className="text-[11px] text-pink-200 truncate">
-                {appIconUrl
-                  ? "กำลังใช้ไอคอนรูปภาพที่ตั้งค่า (พร้อมอัปเดต Favicon)"
-                  : "กำลังใช้ไอคอนมาตรฐานเริ่มต้น (GraduationCap)"}
-              </div>
-            </div>
-          </div>
-
-          {/* Mini MOU Header Preview */}
-          <div className="rounded-2xl bg-white/85 border border-purple-200/80 p-4 flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-xs font-bold text-navy-950">
-                หัวเอกสารหน้า MOU &amp; รายงาน PDF
-              </div>
-              <div className="text-[11px] text-purple-900/70">
-                โลโก้หลัก 2 หน่วยงาน{" "}
-                {mouSealUrl ? "+ ตราเสริม MOU" : ""}{" "}
-                {mouExtraPreview.length > 0
-                  ? `+ ภาคีเพิ่มเติม ${mouExtraPreview.length} รายการ`
-                  : ""}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              {partnerLogoUrl && (
-                <div className="w-10 h-12 rounded-xl bg-white border border-purple-100 p-1 flex items-center justify-center shadow-2xs">
-                  <img
-                    src={partnerLogoUrl}
-                    alt={SCHOOL_INFO.partnerName}
-                    className="max-h-full w-auto object-contain"
-                  />
-                </div>
-              )}
-              {mouSealUrl && (
-                <div className="w-10 h-12 rounded-xl bg-amber-50 border border-amber-200 p-1 flex items-center justify-center shadow-2xs">
-                  <img
-                    src={mouSealUrl}
-                    alt="ตราเสริม MOU"
-                    className="max-h-full w-auto object-contain"
-                  />
-                </div>
-              )}
-              {schoolLogoUrl && (
-                <div className="w-10 h-12 rounded-xl bg-white border border-pink-100 p-1 flex items-center justify-center shadow-2xs">
-                  <img
-                    src={schoolLogoUrl}
-                    alt={SCHOOL_INFO.name}
-                    className="max-h-full w-auto object-contain"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Section 1: Core System Logo Slots */}
+      {/* Section 1: 3 Practical Core Logos */}
       <section className="space-y-4">
-        <div className="space-y-1.5">
-          <h2 className="text-lg sm:text-xl font-bold text-navy-950 flex items-center gap-2">
-            <ImagePlus className="w-5 h-5 text-pink-600" />
-            <span>โลโก้และไอคอนประจำตำแหน่งหลักของระบบ ({coreAssets.length} ตำแหน่ง)</span>
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold text-navy-950">
+            โลโก้หลักที่ใช้งานจริง ({coreAssets.length} รายการ)
           </h2>
           <div className="heading-beam-track" />
         </div>
@@ -591,14 +471,11 @@ export default function AdminBrandingPage() {
         {loading ? (
           <div className="liquid-glass rounded-3xl p-10 text-center text-sm text-purple-900/70 flex items-center justify-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin text-pink-600" />
-            <span>กำลังโหลดข้อมูลโลโก้และไอคอน...</span>
+            <span>กำลังโหลดข้อมูลโลโก้...</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {coreAssets.map((asset) => {
-              const catMeta =
-                BRAND_CATEGORY_META[asset.category] ||
-                BRAND_CATEGORY_META.custom;
               const isBusy = busyId === asset.id;
               return (
                 <div
@@ -607,10 +484,12 @@ export default function AdminBrandingPage() {
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${catMeta.badgeClass}`}
-                      >
-                        {catMeta.label}
+                      <span className="text-xs font-bold text-purple-800 bg-purple-100/80 px-2.5 py-0.5 rounded-full">
+                        {asset.slot_key === "app_icon"
+                          ? "ไอคอนเว็บ"
+                          : asset.slot_key === "school_logo"
+                          ? "สถานศึกษา"
+                          : "หน่วยงานร่วม"}
                       </span>
                       <button
                         type="button"
@@ -627,7 +506,7 @@ export default function AdminBrandingPage() {
                         ) : (
                           <EyeOff className="w-3 h-3" />
                         )}
-                        <span>{asset.is_active ? "เปิดแสดงผล" : "ปิดไว้"}</span>
+                        <span>{asset.is_active ? "เปิดใช้งาน" : "ปิดไว้"}</span>
                       </button>
                     </div>
 
@@ -640,8 +519,8 @@ export default function AdminBrandingPage() {
                             className="max-h-full max-w-full object-contain"
                           />
                         ) : (
-                          <span className="text-[11px] text-purple-400 text-center font-medium">
-                            ยังไม่มีรูป
+                          <span className="text-[11px] text-purple-400">
+                            ไม่มีรูป
                           </span>
                         )}
                       </div>
@@ -649,28 +528,25 @@ export default function AdminBrandingPage() {
                         <h3 className="font-bold text-navy-950 text-sm leading-snug">
                           {asset.title}
                         </h3>
-                        <p className="text-[11px] text-purple-900/70 leading-relaxed line-clamp-3">
+                        <p className="text-[11px] text-purple-900/70 leading-relaxed">
                           {asset.description}
                         </p>
-                        <div className="text-[10px] text-purple-600 font-mono">
-                          {asset.slot_key} • {estimateDataUriKb(asset.image_url)}
-                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-purple-100 flex flex-wrap items-center gap-2">
+                  <div className="pt-2 border-t border-purple-100 flex items-center gap-2">
                     <label className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold cursor-pointer hover:opacity-95 transition-opacity">
                       {isBusy ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
                         <Upload className="w-3.5 h-3.5" />
                       )}
-                      <span>อัปโหลดรูปใหม่</span>
+                      <span>เปลี่ยนรูป</span>
                       <input
                         type="file"
                         accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                        onChange={(e) => handleQuickUploadForAsset(asset, e)}
+                        onChange={(e) => handleQuickUpload(asset, e)}
                         className="hidden"
                       />
                     </label>
@@ -678,7 +554,7 @@ export default function AdminBrandingPage() {
                     <button
                       type="button"
                       onClick={() => openEditModal(asset)}
-                      title="แก้ไขรายละเอียด / ใส่ URL"
+                      title="แก้ไข"
                       className="p-2 rounded-xl bg-white hover:bg-purple-50 text-purple-800 border border-purple-200 cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -688,7 +564,7 @@ export default function AdminBrandingPage() {
                       type="button"
                       disabled={isBusy}
                       onClick={() => handleResetDefault(asset)}
-                      title="คืนค่าเริ่มต้น"
+                      title="คืนค่าเดิม"
                       className="p-2 rounded-xl bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
@@ -701,65 +577,33 @@ export default function AdminBrandingPage() {
         )}
       </section>
 
-      {/* Section 2: Custom Added Logos & Partner Badges */}
+      {/* Section 2: Addable Partner Logos (Only when needed) */}
       <section className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div className="space-y-1.5">
-            <h2 className="text-lg sm:text-xl font-bold text-navy-950 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-pink-600" />
-              <span>
-                โลโก้ / ไอคอนส่วนที่เพิ่มเอง ({assets.filter((a) => !CORE_SET.has(a.slot_key)).length} รายการ)
-              </span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-navy-950">
+              โลโก้หน่วยงานเพิ่มเติม ({customAssets.length} รายการ)
             </h2>
             <div className="heading-beam-track" />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={placementFilter}
-              onChange={(e) => setPlacementFilter(e.target.value)}
-              aria-label="กรองตามตำแหน่งแสดงผล"
-              className="bg-white/90 border border-purple-200 rounded-full px-3.5 py-1.5 text-xs font-semibold text-purple-950"
-            >
-              <option value="all">ทุกตำแหน่งแสดงผล</option>
-              {BRAND_PLACEMENT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
-            <button
-              type="button"
-              onClick={openAddCustomModal}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full liquid-btn-primary text-white text-xs font-bold cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>เพิ่มโลโก้เพิ่มเติม</span>
-            </button>
           </div>
         </div>
 
         {customAssets.length === 0 ? (
-          <div className="liquid-glass rounded-3xl p-8 text-center space-y-2.5">
-            <ImagePlus className="w-10 h-10 text-pink-300 mx-auto" />
-            <div className="text-sm font-bold text-navy-950">
-              ยังไม่มีโลโก้เพิ่มเติมในหมวดนี้
+          <div className="liquid-glass rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs sm:text-sm text-purple-900/75">
+              ยังไม่มีโลโก้เพิ่มเติม — หากในอนาคตมีหน่วยงานภาคีใหม่ (เช่น สพป. หรือผู้สนับสนุน) สามารถกดเพิ่มเพื่อแสดงในหน้า MOU และหน้าสาธารณะได้ทันที
             </div>
-            <p className="text-xs text-purple-900/70 max-w-lg mx-auto">
-              คุณสามารถเพิ่มตราสัญลักษณ์ของหน่วยงานภาคี เช่น ตรา สพฐ., ตรา สพป.จันทบุรี เขต 1, ตราองค์กรผู้สนับสนุน แล้วเลือกให้แสดงบนหน้า MOU หน้าสาธารณะ หรือ Footer ได้ตามต้องการ
-            </p>
             <button
               type="button"
               onClick={openAddCustomModal}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full liquid-btn-primary text-white text-xs font-bold cursor-pointer mt-1"
+              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full liquid-btn-primary text-white text-xs font-bold cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>เพิ่มโลโก้รายการแรก</span>
+              <span>เพิ่มโลโก้</span>
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {customAssets.map((asset) => {
               const placementMeta = BRAND_PLACEMENT_OPTIONS.find(
                 (p) => p.value === asset.placement
@@ -772,8 +616,8 @@ export default function AdminBrandingPage() {
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-200 truncate">
-                        {placementMeta?.label || asset.placement}
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-900 truncate">
+                        {placementMeta?.label || "หน้า MOU และสาธารณะ"}
                       </span>
                       <button
                         type="button"
@@ -790,44 +634,36 @@ export default function AdminBrandingPage() {
                         ) : (
                           <EyeOff className="w-3 h-3" />
                         )}
-                        <span>{asset.is_active ? "เปิดแสดงผล" : "ซ่อนอยู่"}</span>
+                        <span>{asset.is_active ? "เปิด" : "ซ่อน"}</span>
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-16 h-16 rounded-2xl bg-white border border-purple-200/80 p-1.5 flex items-center justify-center shadow-inner shrink-0 overflow-hidden">
-                        {asset.image_url ? (
-                          <img
-                            src={asset.image_url}
-                            alt={asset.title}
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        ) : (
-                          <span className="text-[10px] text-purple-400">
-                            ไม่มีรูป
-                          </span>
-                        )}
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-16 rounded-2xl bg-white border border-purple-200 p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
+                        <img
+                          src={asset.image_url}
+                          alt={asset.title}
+                          className="max-h-full max-w-full object-contain"
+                        />
                       </div>
-                      <div className="min-w-0 flex-1 space-y-1">
+                      <div className="min-w-0 flex-1">
                         <h3 className="font-bold text-navy-950 text-sm truncate">
                           {asset.title}
                         </h3>
-                        <p className="text-xs text-purple-900/70 line-clamp-2">
-                          {asset.description || "-"}
-                        </p>
-                        <div className="text-[10px] text-purple-600 font-mono">
-                          ลำดับ #{asset.display_order} •{" "}
-                          {estimateDataUriKb(asset.image_url)}
-                        </div>
+                        {asset.description && (
+                          <p className="text-xs text-purple-900/70 line-clamp-2 mt-0.5">
+                            {asset.description}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-purple-100 flex items-center justify-between gap-2">
+                  <div className="pt-2 border-t border-purple-100 flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => openEditModal(asset)}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-purple-50 text-purple-900 border border-purple-200 text-xs font-bold cursor-pointer"
+                      className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-white hover:bg-purple-50 text-purple-900 border border-purple-200 text-xs font-bold cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5 text-pink-600" />
                       <span>แก้ไข</span>
@@ -849,26 +685,21 @@ export default function AdminBrandingPage() {
         )}
       </section>
 
-      {/* Add / Edit Modal */}
+      {/* Clean Add / Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-purple-950/50 backdrop-blur-sm">
           <form
             onSubmit={handleSaveForm}
-            className="w-full max-w-xl max-h-[92vh] overflow-y-auto liquid-glass bg-white/95 rounded-3xl p-6 space-y-4 shadow-glass-lg border border-purple-200"
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto liquid-glass bg-white/95 rounded-3xl p-6 space-y-4 shadow-glass-lg border border-purple-200"
           >
             <div className="flex items-center justify-between border-b border-purple-100 pb-3">
-              <div>
-                <h2 className="text-lg font-bold text-navy-950">
-                  {form.is_core
-                    ? `ตั้งค่า ${form.title}`
-                    : form.id
-                    ? "แก้ไขโลโก้เพิ่มเติม"
-                    : "เพิ่มโลโก้ / ไอคอนใหม่"}
-                </h2>
-                <p className="text-xs text-purple-900/70">
-                  อัปโหลดไฟล์ PNG / JPG / WEBP / SVG (ระบบปรับขนาดให้อัตโนมัติคมชัด) หรือวาง URL รูปภาพ
-                </p>
-              </div>
+              <h2 className="text-base sm:text-lg font-bold text-navy-950">
+                {form.is_core
+                  ? `แก้ไข ${form.title}`
+                  : form.id
+                  ? "แก้ไขโลโก้เพิ่มเติม"
+                  : "เพิ่มโลโก้หน่วยงานเพิ่มเติม"}
+              </h2>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
@@ -884,56 +715,43 @@ export default function AdminBrandingPage() {
               </div>
             )}
 
-            {/* Image Upload & Preview Box */}
-            <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200/80 flex flex-col sm:flex-row items-center gap-4">
-              <div className="w-24 h-24 rounded-2xl bg-white border border-purple-200 p-2 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+            <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200/80 flex items-center gap-4">
+              <div className="w-20 h-20 rounded-2xl bg-white border border-purple-200 p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
                 {processingImg ? (
-                  <Loader2 className="w-6 h-6 animate-spin text-pink-600" />
+                  <Loader2 className="w-5 h-5 animate-spin text-pink-600" />
                 ) : form.image_url ? (
                   <img
                     src={form.image_url}
-                    alt="ตัวอย่างโลโก้"
+                    alt="ตัวอย่าง"
                     className="max-h-full max-w-full object-contain"
                   />
                 ) : (
-                  <span className="text-xs text-purple-400 text-center">
-                    ยังไม่มีรูป
-                  </span>
+                  <span className="text-[11px] text-purple-400">ไม่มีรูป</span>
                 )}
               </div>
 
-              <div className="flex-1 w-full space-y-2">
-                <div className="flex flex-wrap gap-2">
-                  <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold cursor-pointer hover:opacity-95">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>เลือกไฟล์รูปจากเครื่อง</span>
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                      onChange={handleFilePickedInModal}
-                      className="hidden"
-                    />
-                  </label>
-
-                  {form.image_url && (
-                    <button
-                      type="button"
-                      onClick={() => setForm({ ...form, image_url: "" })}
-                      className="px-3 py-2 rounded-full bg-white border border-rose-200 text-rose-700 text-xs font-semibold cursor-pointer"
-                    >
-                      ล้างรูป
-                    </button>
-                  )}
+              <div className="flex-1 space-y-2 min-w-0">
+                <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold cursor-pointer">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>อัปโหลดรูปภาพ</span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    onChange={handleFilePickedInModal}
+                    className="hidden"
+                  />
+                </label>
+                <div className="text-[11px] text-purple-900/65">
+                  PNG / JPG / WEBP / SVG ({estimateDataUriKb(form.image_url)})
                 </div>
-
                 <input
                   type="text"
                   value={form.image_url}
                   onChange={(e) =>
                     setForm({ ...form, image_url: e.target.value })
                   }
-                  placeholder="หรือวาง URL รูปภาพ เช่น /images/... หรือ https://..."
-                  className="w-full border border-purple-200 rounded-xl px-3 py-1.5 text-xs bg-white font-mono"
+                  placeholder="หรือวาง URL รูปภาพ..."
+                  className="w-full border border-purple-200 rounded-xl px-2.5 py-1 text-xs bg-white font-mono"
                 />
               </div>
             </div>
@@ -948,14 +766,13 @@ export default function AdminBrandingPage() {
                   required
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="เช่น สำนักงานเขตพื้นที่การศึกษาประถมศึกษาจันทบุรี เขต 1"
                   className="w-full border border-purple-200 rounded-xl px-3 py-2 text-sm bg-white"
                 />
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-purple-950 block mb-1">
-                  คำอธิบาย / ข้อความกำกับใต้โลโก้
+                  คำอธิบายสั้น (ถ้ามี)
                 </label>
                 <input
                   type="text"
@@ -963,74 +780,31 @@ export default function AdminBrandingPage() {
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
-                  placeholder="เช่น หน่วยงานต้นสังกัด / ภาคีร่วมสนับสนุน"
                   className="w-full border border-purple-200 rounded-xl px-3 py-2 text-sm bg-white"
                 />
               </div>
 
               {!form.is_core && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-purple-950 block mb-1">
-                      หมวดหมู่
-                    </label>
-                    <select
-                      value={form.category}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          category: e.target.value as BrandCategory,
-                        })
-                      }
-                      className="w-full border border-purple-200 rounded-xl px-3 py-2 text-xs bg-white"
-                    >
-                      {Object.entries(BRAND_CATEGORY_META).map(([key, meta]) => (
-                        <option key={key} value={key}>
-                          {meta.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-purple-950 block mb-1">
-                      ตำแหน่งแสดงผลบนเว็บ
-                    </label>
-                    <select
-                      value={form.placement}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          placement: e.target.value as BrandPlacement,
-                        })
-                      }
-                      className="w-full border border-purple-200 rounded-xl px-3 py-2 text-xs bg-white"
-                    >
-                      {BRAND_PLACEMENT_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-purple-950 block mb-1">
-                      ลำดับการเรียง
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={form.display_order}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          display_order: Number(e.target.value) || 1,
-                        })
-                      }
-                      className="w-full border border-purple-200 rounded-xl px-3 py-2 text-xs bg-white"
-                    />
-                  </div>
+                <div>
+                  <label className="text-xs font-semibold text-purple-950 block mb-1">
+                    ตำแหน่งที่แสดงผล
+                  </label>
+                  <select
+                    value={form.placement}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        placement: e.target.value as BrandPlacement,
+                      })
+                    }
+                    className="w-full border border-purple-200 rounded-xl px-3 py-2 text-xs bg-white"
+                  >
+                    {BRAND_PLACEMENT_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
 
@@ -1043,7 +817,7 @@ export default function AdminBrandingPage() {
                   }
                   className="accent-pink-600 rounded"
                 />
-                <span>เปิดใช้งาน / แสดงผลโลโก้นี้ทันที</span>
+                <span>เปิดใช้งาน / แสดงผลทันที</span>
               </label>
             </div>
 
@@ -1065,7 +839,7 @@ export default function AdminBrandingPage() {
                 ) : (
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 )}
-                <span>{saving ? "กำลังบันทึก..." : "บันทึกโลโก้"}</span>
+                <span>{saving ? "กำลังบันทึก..." : "บันทึก"}</span>
               </button>
             </div>
           </form>

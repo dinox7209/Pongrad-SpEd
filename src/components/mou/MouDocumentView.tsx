@@ -79,8 +79,7 @@ const WITNESSES = [
 ];
 
 export function MouDocumentView() {
-  const { schoolLogoUrl, partnerLogoUrl, mouSealUrl, getExtraAssets } =
-    useBrandAssets();
+  const { schoolLogoUrl, partnerLogoUrl, getExtraAssets } = useBrandAssets();
   const extraMouAssets = getExtraAssets("mou");
 
   return (
@@ -136,19 +135,9 @@ export function MouDocumentView() {
                 </div>
               )}
 
-              {mouSealUrl ? (
-                <div className="w-14 h-16 sm:w-16 sm:h-20 rounded-2xl bg-white/95 p-1.5 flex items-center justify-center shadow-glass-pink border border-white/40 shrink-0">
-                  <img
-                    src={mouSealUrl}
-                    alt="ตราสัญลักษณ์เสริมหน้า MOU"
-                    className="max-h-full w-auto object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white flex items-center justify-center shadow-glass-pink border border-white/40 shrink-0">
-                  <Handshake className="w-4 h-4" />
-                </div>
-              )}
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white flex items-center justify-center shadow-glass-pink border border-white/40 shrink-0">
+                <Handshake className="w-4 h-4" />
+              </div>
 
               {schoolLogoUrl && (
                 <div className="w-16 h-20 sm:w-[74px] sm:h-[88px] rounded-2xl bg-white p-1.5 flex items-center justify-center shadow-sm">
@@ -189,20 +178,10 @@ export function MouDocumentView() {
             </div>
           )}
 
-          {mouSealUrl ? (
-            <div className="flex flex-col items-center gap-1.5 text-center">
-              <img
-                src={mouSealUrl}
-                alt="ตราสัญลักษณ์ความร่วมมือ"
-                className="h-16 sm:h-20 w-auto object-contain"
-              />
-            </div>
-          ) : (
-            <div className="hidden sm:flex flex-col items-center gap-1 text-purple-300 no-print">
-              <Sparkles className="w-4 h-4 text-pink-500" />
-              <div className="w-10 h-px bg-gradient-to-r from-purple-300 via-pink-400 to-purple-300" />
-            </div>
-          )}
+          <div className="hidden sm:flex flex-col items-center gap-1 text-purple-300 no-print">
+            <Sparkles className="w-4 h-4 text-pink-500" />
+            <div className="w-10 h-px bg-gradient-to-r from-purple-300 via-pink-400 to-purple-300" />
+          </div>
 
           {schoolLogoUrl && (
             <div className="flex flex-col items-center gap-1.5 text-center">

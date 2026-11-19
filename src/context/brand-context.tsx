@@ -23,11 +23,7 @@ interface BrandContextValue {
   appIconUrl: string | null;
   schoolLogoUrl: string | null;
   partnerLogoUrl: string | null;
-  mouSealUrl: string | null;
-  showcaseBadgeUrl: string | null;
-  getExtraAssets: (
-    placement: "mou" | "showcase" | "footer" | "header"
-  ) => BrandAsset[];
+  getExtraAssets: (placement: "mou" | "showcase") => BrandAsset[];
   refreshBrands: () => Promise<void>;
   setBrandAssetsState: (next: BrandAsset[]) => void;
 }
@@ -38,8 +34,6 @@ const BrandContext = createContext<BrandContextValue>({
   appIconUrl: null,
   schoolLogoUrl: "/images/logo-wat-pongrad.png",
   partnerLogoUrl: "/images/logo-sped-chanthaburi.png",
-  mouSealUrl: null,
-  showcaseBadgeUrl: null,
   getExtraAssets: () => [],
   refreshBrands: async () => {},
   setBrandAssetsState: () => {},
@@ -63,12 +57,20 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
           .order("created_at", { ascending: true });
 
         if (!error && data && data.length > 0) {
-          setAssets(data as BrandAsset[]);
+          const filtered = (data as BrandAsset[]).filter(
+            (a) =>
+              a.slot_key !== "mou_seal" &&
+              a.slot_key !== "showcase_badge"
+          );
+          setAssets(filtered.length > 0 ? filtered : DEFAULT_BRAND_ASSETS);
         } else {
           setAssets(DEFAULT_BRAND_ASSETS);
         }
       } else {
-        setAssets(getDemoBrandAssets());
+        const demo = getDemoBrandAssets().filter(
+          (a) => a.slot_key !== "mou_seal" && a.slot_key !== "showcase_badge"
+        );
+        setAssets(demo.length > 0 ? demo : DEFAULT_BRAND_ASSETS);
       }
     } catch {
       setAssets(DEFAULT_BRAND_ASSETS);
@@ -115,14 +117,6 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
     () => resolveSlotUrl("partner_logo", "/images/logo-sped-chanthaburi.png"),
     [resolveSlotUrl]
   );
-  const mouSealUrl = useMemo(
-    () => resolveSlotUrl("mou_seal", null),
-    [resolveSlotUrl]
-  );
-  const showcaseBadgeUrl = useMemo(
-    () => resolveSlotUrl("showcase_badge", null),
-    [resolveSlotUrl]
-  );
 
   // ซิงค์ Favicon บนแท็บเบราว์เซอร์เมื่อเปิดใช้งาน app_icon
   useEffect(() => {
@@ -137,7 +131,7 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
   }, [appIconUrl]);
 
   const getExtraAssets = useCallback(
-    (placement: "mou" | "showcase" | "footer" | "header"): BrandAsset[] => {
+    (placement: "mou" | "showcase"): BrandAsset[] => {
       return assets
         .filter(
           (item) =>
@@ -158,8 +152,6 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
       appIconUrl,
       schoolLogoUrl,
       partnerLogoUrl,
-      mouSealUrl,
-      showcaseBadgeUrl,
       getExtraAssets,
       refreshBrands,
       setBrandAssetsState,
@@ -170,8 +162,6 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
       appIconUrl,
       schoolLogoUrl,
       partnerLogoUrl,
-      mouSealUrl,
-      showcaseBadgeUrl,
       getExtraAssets,
       refreshBrands,
       setBrandAssetsState,

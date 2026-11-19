@@ -7,8 +7,7 @@ import { useBrandAssets } from "@/context/brand-context";
 import { SCHOOL_INFO } from "@/types/database";
 
 export function Footer() {
-  const { schoolLogoUrl, partnerLogoUrl, getExtraAssets } = useBrandAssets();
-  const extraFooterAssets = getExtraAssets("footer");
+  const { schoolLogoUrl, partnerLogoUrl } = useBrandAssets();
 
   return (
     <footer className="liquid-glass-nav running-line-bottom border-t border-white/20 text-purple-100 py-8 px-4 sm:px-6 lg:px-8 mt-auto no-print">
@@ -83,28 +82,6 @@ export function Footer() {
             </div>
           </div>
         </div>
-
-        {extraFooterAssets.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-            {extraFooterAssets.map((item) => (
-              <div
-                key={item.id}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/10 border border-white/20 text-xs text-white"
-              >
-                <div className="w-7 h-7 rounded-xl bg-white p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
-                  <img
-                    src={item.image_url}
-                    alt={item.title}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
-                <span className="font-medium truncate max-w-[200px]">
-                  {item.title}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
 
         <div className="pt-4 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-purple-200/85 text-center sm:text-left">
           <span>
