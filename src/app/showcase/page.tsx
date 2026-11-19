@@ -281,7 +281,7 @@ export default function PublicShowcasePage() {
           </h2>
           <div className="heading-beam-track" />
           <p className="text-xs sm:text-sm text-purple-900/70 pt-0.5">
-            คัดสรรเฉพาะผลงานที่ผู้ดูแลเปิดสวิตช์เผยแพร่สาธารณะ (<code>is_public: true</code>)
+            รวมคลิปวิดีโอกิจกรรม สื่อการเรียนรู้ และผลงานเด่นของนักเรียนสำหรับผู้ปกครองและผู้สนใจ
           </p>
         </div>
 
