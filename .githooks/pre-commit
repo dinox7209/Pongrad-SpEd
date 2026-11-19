@@ -19,10 +19,10 @@ for FILE in $STAGED_FILES; do
       ;;
   esac
 
-  # 2. บล็อกไฟล์คีย์ Google Service Account / ใบรับรอง / credentials
+  # 2. บล็อกไฟล์คีย์ Google Service Account / ใบรับรอง / credentials / ข้อมูลนักเรียนจริง
   case "$BASENAME" in
-    *.pem|*.key|*.p12|*.pfx|*.json.key|*service-account*.json|*service_account*.json|*credentials*.json|google-drive-key*.json)
-      echo "❌ [BLOCKED] ห้าม commit ไฟล์คีย์ลับ: $FILE"
+    *.pem|*.key|*.p12|*.pfx|*.json.key|*service-account*.json|*service_account*.json|*credentials*.json|google-drive-key*.json|seed_real_information.sql)
+      echo "❌ [BLOCKED] ห้าม commit ไฟล์ข้อมูลลับ/ข้อมูลส่วนบุคคล: $FILE"
       BLOCKED=1
       ;;
   esac

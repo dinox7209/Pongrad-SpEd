@@ -8,6 +8,7 @@ import { SCHOOL_INFO } from "@/types/database";
 import {
   Sparkles,
   LayoutDashboard,
+  ClipboardList,
   Users,
   FileText,
   Film,
@@ -33,6 +34,7 @@ export function Navbar() {
 
   const adminLinks = [
     { href: "/admin", label: "แดชบอร์ด", icon: LayoutDashboard },
+    { href: "/admin/information", label: "สารสนเทศ", icon: ClipboardList },
     { href: "/admin/students", label: "นักเรียน", icon: Users },
     { href: "/admin/generator", label: "เอกสาร A4", icon: FileText },
     { href: "/admin/studio", label: "สตูดิโอสื่อ", icon: Film },
@@ -73,7 +75,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation (Single-line Liquid Pill Capsule) */}
-          <nav className="hidden xl:flex items-center gap-1 bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-white/20 shrink-0">
+          <nav className="hidden xl:flex items-center gap-0.5 bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-white/20 shrink-0">
             {visibleLinks.map((link) => {
               const Icon = link.icon;
               const isActive =
@@ -85,7 +87,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                     isActive
                       ? "bg-gradient-to-r from-purple-500/90 to-pink-500/90 text-white shadow-glass-pink border border-white/35"
                       : "text-purple-100 hover:bg-white/15 hover:text-white"

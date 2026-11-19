@@ -8,6 +8,7 @@ import {
   getDemoLogs,
   getDemoMedia,
   getDemoProfiles,
+  getDemoResourceRecords,
   getDemoStudents,
   getDemoTasks,
   saveDemoProfiles,
@@ -16,6 +17,7 @@ import { formatDateThai } from "@/lib/utils";
 import {
   MediaAsset,
   Profile,
+  ResourceRoomRecord,
   SCHOOL_INFO,
   Student,
   STUDENT_STATUS_META,
@@ -28,6 +30,7 @@ import {
   Building2,
   CalendarCheck2,
   CheckCircle2,
+  ClipboardList,
   Clock,
   Eye,
   EyeOff,
@@ -51,6 +54,7 @@ export default function AdminDashboardPage() {
   const [media, setMedia] = useState<MediaAsset[]>([]);
   const [tasks, setTasks] = useState<WeeklyTask[]>([]);
   const [teamProfiles, setTeamProfiles] = useState<Profile[]>([]);
+  const [records, setRecords] = useState<ResourceRoomRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,7 +62,7 @@ export default function AdminDashboardPage() {
       setLoading(true);
       try {
         if (isConfigured) {
-          const [stRes, logRes, mediaRes, taskRes, profRes] = await Promise.all([
+          const [stRes, logRes, mediaRes, taskRes, profRes, recRes] = await Promise.all([
             supabase.from("students").select("*").order("created_at", { ascending: false }),
             supabase
               .from("student_logs")
@@ -68,6 +72,11 @@ export default function AdminDashboardPage() {
             supabase.from("media_assets").select("*").order("created_at", { ascending: false }),
             supabase.from("weekly_tasks").select("*").order("week_number", { ascending: true }),
             supabase.from("profiles").select("*").order("role", { ascending: false }),
+            supabase
+              .from("resource_room_records")
+              .select("*")
+              .order("academic_year", { ascending: true })
+              .order("row_order", { ascending: true }),
           ]);
 
           setStudents((stRes.data as Student[]) || []);
@@ -75,6 +84,7 @@ export default function AdminDashboardPage() {
           setMedia((mediaRes.data as MediaAsset[]) || []);
           setTasks((taskRes.data as WeeklyTask[]) || []);
           setTeamProfiles((profRes.data as Profile[]) || []);
+          setRecords(!recRes.error && recRes.data ? (recRes.data as ResourceRoomRecord[]) : []);
         } else {
           const demoStudents = getDemoStudents();
           const studentMap = new Map(demoStudents.map((s) => [s.id, s]));
@@ -87,6 +97,7 @@ export default function AdminDashboardPage() {
           setMedia(getDemoMedia());
           setTasks(getDemoTasks());
           setTeamProfiles(getDemoProfiles());
+          setRecords(getDemoResourceRecords());
         }
       } catch (err) {
         console.error("Failed to load admin dashboard:", err);
@@ -156,6 +167,75 @@ export default function AdminDashboardPage() {
       ),
     [students]
   );
+
+  const yearlyInfoSummary = useMemo(() => {
+    const grouped = new Map<string, ResourceRoomRecord[]>();
+    for (const rec of records) {
+      const year = rec.academic_year || "ไม่ระบุปี";
+      const list = grouped.get(year);
+      if (list) {
+        list.push(rec);
+      } else {
+        grouped.set(year, [rec]);
+      }
+    }
+
+    return Array.from(grouped.entries())
+      .sort(([a], [b]) => a.localeCompare(b, "th"))
+      .map(([year, rows]) => {
+        const male = rows.filter((r) => r.gender === "ชาย").length;
+        const female = rows.filter((r) => r.gender === "หญิง").length;
+
+        const gradeCounts = new Map<string, number>();
+        const disabilityCounts = new Map<string, number>();
+        for (const row of rows) {
+          const grade = row.grade_level || "ไม่ระบุชั้น";
+          gradeCounts.set(grade, (gradeCounts.get(grade) || 0) + 1);
+          const disability = row.disability_type || "ไม่ระบุประเภท";
+          disabilityCounts.set(disability, (disabilityCounts.get(disability) || 0) + 1);
+        }
+
+        const qualityRows = rows.filter(
+          (r): r is ResourceRoomRecord & { quality_score: number } =>
+            typeof r.quality_score === "number" && Number.isFinite(r.quality_score)
+        );
+        const iepRows = rows.filter(
+          (r): r is ResourceRoomRecord & { iep_pass_percent: number } =>
+            typeof r.iep_pass_percent === "number" && Number.isFinite(r.iep_pass_percent)
+        );
+
+        const avgQuality =
+          qualityRows.length > 0
+            ? (
+                qualityRows.reduce((acc, r) => acc + r.quality_score, 0) /
+                qualityRows.length
+              ).toFixed(2)
+            : null;
+        const avgIepPass =
+          iepRows.length > 0
+            ? Math.round(
+                iepRows.reduce((acc, r) => acc + r.iep_pass_percent, 0) /
+                  iepRows.length
+              )
+            : null;
+
+        const homeroomTeacher =
+          rows.find((r) => r.homeroom_teacher && r.homeroom_teacher.trim().length > 0)
+            ?.homeroom_teacher || "นางสาวดวงพร หวังอ้อมกลาง";
+
+        return {
+          year,
+          total: rows.length,
+          male,
+          female,
+          gradeList: Array.from(gradeCounts.entries()),
+          disabilityList: Array.from(disabilityCounts.entries()),
+          avgQuality,
+          avgIepPass,
+          homeroomTeacher,
+        };
+      });
+  }, [records]);
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 space-y-8 max-w-7xl mx-auto">
@@ -373,8 +453,138 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* สารสนเทศห้องเรียนเสริมวิชาการรายปีการศึกษา */}
+      <div className="liquid-glass rounded-3xl p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1.5">
+            <h2 className="font-bold text-navy-950 flex items-center gap-2">
+              <ClipboardList className="w-5 h-5 text-pink-600" />
+              <span>สารสนเทศห้องเรียนเสริมวิชาการ (Resource Room) รายปีการศึกษา</span>
+            </h2>
+            <div className="heading-beam-track" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-900 text-xs font-semibold border border-purple-200">
+              {yearlyInfoSummary.length} ปีการศึกษา • รวม {records.length} รายการ
+            </span>
+            <Link
+              href="/admin/information"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold shadow-glass-pink hover:scale-[1.02] transition-transform"
+            >
+              <span>จัดการ / แก้ไขสารสนเทศ</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {yearlyInfoSummary.length === 0 ? (
+          <div className="p-6 text-center bg-white/65 rounded-2xl border border-purple-200/70 space-y-2">
+            <p className="text-sm font-semibold text-navy-950">
+              ยังไม่มีข้อมูลสารสนเทศรายปีการศึกษาในฐานข้อมูล
+            </p>
+            <p className="text-xs text-purple-900/70">
+              คุณครูสามารถกดปุ่ม “จัดการ / แก้ไขสารสนเทศ” เพื่อเพิ่มข้อมูล หรือรันไฟล์ SQL ตั้งต้นใน Supabase
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {yearlyInfoSummary.map((summary) => (
+              <div
+                key={summary.year}
+                className="bg-white/75 rounded-2xl border border-purple-200/80 p-4 sm:p-5 flex flex-col justify-between gap-4 hover:border-pink-400 transition-colors"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-purple-700 to-pink-600 text-white text-xs font-bold">
+                      ปีการศึกษา {summary.year}
+                    </span>
+                    <span className="text-lg font-extrabold text-navy-950">
+                      {summary.total} คน
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-xl bg-purple-50/90 border border-purple-100 px-3 py-2">
+                      <div className="text-purple-900/65 text-[11px]">เพศ (ชาย / หญิง)</div>
+                      <div className="font-bold text-navy-950 mt-0.5">
+                        ชาย {summary.male} • หญิง {summary.female}
+                      </div>
+                    </div>
+                    <div className="rounded-xl bg-pink-50/90 border border-pink-100 px-3 py-2">
+                      <div className="text-pink-900/65 text-[11px]">ผลสัมฤทธิ์เฉลี่ย</div>
+                      <div className="font-bold text-navy-950 mt-0.5">
+                        {summary.avgQuality !== null || summary.avgIepPass !== null
+                          ? `${summary.avgQuality ?? "-"} • IEP ${summary.avgIepPass ?? "-"}%`
+                          : "รอสรุปปลายปี"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs">
+                    <div className="text-purple-900/70 font-semibold">ประเภทความพิการ:</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {summary.disabilityList.map(([type, count]) => (
+                        <span
+                          key={type}
+                          className="px-2.5 py-0.5 rounded-full bg-white border border-purple-200 text-purple-950 font-medium text-[11px]"
+                        >
+                          {type} ({count})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs">
+                    <div className="text-purple-900/70 font-semibold">ระดับชั้นที่รับบริการ:</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {summary.gradeList.map(([grade, count]) => (
+                        <span
+                          key={grade}
+                          className="px-2.5 py-0.5 rounded-full bg-fuchsia-50 border border-fuchsia-200 text-fuchsia-900 font-semibold text-[11px]"
+                        >
+                          {grade}: {count} คน
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-purple-100 flex items-center justify-between gap-2 text-xs">
+                  <span className="text-purple-900/75 truncate">
+                    ครูผู้รับผิดชอบ: {summary.homeroomTeacher}
+                  </span>
+                  <Link
+                    href="/admin/information"
+                    className="shrink-0 font-bold text-pink-600 hover:underline flex items-center gap-0.5"
+                  >
+                    <span>แก้ไขข้อมูล</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Quick Action Modules */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Link
+          href="/admin/information"
+          className="group liquid-glass p-5 rounded-3xl hover:-translate-y-1 hover:shadow-glass-lg transition-all"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white flex items-center justify-center shadow-sm">
+              <ClipboardList className="w-5 h-5" />
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-purple-400 group-hover:text-pink-600" />
+          </div>
+          <h2 className="font-bold text-navy-950 text-sm">สารสนเทศรายปีการศึกษา</h2>
+          <p className="text-xs text-purple-900/65 mt-1">
+            เพิ่ม/แก้ไขข้อมูลนักเรียน ผล IEP การส่งต่อ และส่งออก Excel / พิมพ์ตาราง
+          </p>
+        </Link>
+
         <Link
           href="/admin/students"
           className="group liquid-glass p-5 rounded-3xl hover:-translate-y-1 hover:shadow-glass-lg transition-all"

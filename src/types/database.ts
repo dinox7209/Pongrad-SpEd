@@ -109,6 +109,44 @@ export interface WeeklyTask {
   updated_at?: string;
 }
 
+export type GenderType = "ชาย" | "หญิง";
+
+export interface ResourceRoomRecord {
+  id: string;
+  academic_year: string;
+  row_order: number;
+  student_id?: string | null;
+  full_name: string;
+  gender: GenderType;
+  student_number: string;
+  entry_year: string;
+  age_years?: number | null;
+  grade_level: string;
+  disability_type: string;
+  homeroom_teacher: string;
+  quality_score?: number | null;
+  iep_pass_percent?: number | null;
+  transfer_same_school: string;
+  transfer_other_inclusive: string;
+  transfer_other_school: string;
+  notes?: string | null;
+  updated_by?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+export const INFORMATION_GRADE_LEVELS = [
+  "อ.1",
+  "อ.2",
+  "อ.3",
+  "ป.1",
+  "ป.2",
+  "ป.3",
+  "ป.4",
+  "ป.5",
+  "ป.6",
+] as const;
+
 export const GRADE_LEVELS = [
   "อนุบาล 1",
   "อนุบาล 2",

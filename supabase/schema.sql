@@ -101,6 +101,31 @@ CREATE TABLE IF NOT EXISTS public.weekly_tasks (
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 2.6 resource_room_records (สารสนเทศรายปีการศึกษา ห้องเสริมวิชาการสู่การเรียนรวม)
+CREATE TABLE IF NOT EXISTS public.resource_room_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    academic_year TEXT NOT NULL,
+    row_order INTEGER NOT NULL DEFAULT 1,
+    student_id UUID REFERENCES public.students(id) ON DELETE SET NULL,
+    full_name TEXT NOT NULL,
+    gender TEXT NOT NULL CHECK (gender IN ('ชาย', 'หญิง')),
+    student_number TEXT NOT NULL DEFAULT '',
+    entry_year TEXT NOT NULL DEFAULT '',
+    age_years INTEGER,
+    grade_level TEXT NOT NULL,
+    disability_type TEXT NOT NULL,
+    homeroom_teacher TEXT NOT NULL DEFAULT 'นางสาวดวงพร หวังอ้อมกลาง',
+    quality_score NUMERIC(4, 2),
+    iep_pass_percent NUMERIC(5, 2),
+    transfer_same_school TEXT NOT NULL DEFAULT '',
+    transfer_other_inclusive TEXT NOT NULL DEFAULT '-',
+    transfer_other_school TEXT NOT NULL DEFAULT '-',
+    notes TEXT DEFAULT '',
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- 3. Indexes
 CREATE INDEX IF NOT EXISTS idx_students_status ON public.students(current_status);
 CREATE INDEX IF NOT EXISTS idx_students_grade ON public.students(grade_level);
@@ -108,6 +133,7 @@ CREATE INDEX IF NOT EXISTS idx_student_logs_student_date ON public.student_logs(
 CREATE INDEX IF NOT EXISTS idx_media_assets_public ON public.media_assets(is_public, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_media_assets_skill ON public.media_assets(skill_category, grade_level);
 CREATE INDEX IF NOT EXISTS idx_weekly_tasks_week_no ON public.weekly_tasks(week_number);
+CREATE INDEX IF NOT EXISTS idx_resource_room_year ON public.resource_room_records(academic_year, row_order);
 
 -- 4. Helper Functions & Triggers
 
@@ -139,6 +165,11 @@ CREATE TRIGGER trg_media_assets_updated_at
 DROP TRIGGER IF EXISTS trg_weekly_tasks_updated_at ON public.weekly_tasks;
 CREATE TRIGGER trg_weekly_tasks_updated_at
   BEFORE UPDATE ON public.weekly_tasks
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_resource_room_records_updated_at ON public.resource_room_records;
+CREATE TRIGGER trg_resource_room_records_updated_at
+  BEFORE UPDATE ON public.resource_room_records
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ตรวจสอบสิทธิ์ผู้ดูแลระบบ (รองรับทั้งแอดมินหลัก super_admin และผู้ดูแล admin)
@@ -448,6 +479,17 @@ REVOKE ALL ON public.weekly_tasks FROM anon;
 DROP POLICY IF EXISTS "Admins manage weekly_tasks" ON public.weekly_tasks;
 CREATE POLICY "Admins manage weekly_tasks"
   ON public.weekly_tasks FOR ALL
+  TO authenticated
+  USING (public.is_admin(auth.uid()))
+  WITH CHECK (public.is_admin(auth.uid()));
+
+-- 7.6 resource_room_records: เฉพาะ Admin 2 ท่านเท่านั้น (ปกป้องข้อมูลสารสนเทศและรายชื่อนักเรียนจริง)
+ALTER TABLE public.resource_room_records ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.resource_room_records FROM anon;
+
+DROP POLICY IF EXISTS "Admins manage resource_room_records" ON public.resource_room_records;
+CREATE POLICY "Admins manage resource_room_records"
+  ON public.resource_room_records FOR ALL
   TO authenticated
   USING (public.is_admin(auth.uid()))
   WITH CHECK (public.is_admin(auth.uid()));

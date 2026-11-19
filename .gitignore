@@ -28,6 +28,8 @@
 *credentials*.json
 google-drive-key*.json
 secrets/
+supabase/seed_real_information.sql
+supabase/seed_*.local.sql
 
 # environment files (ป้องกันอัพไฟล์ .env ขึ้น GitHub ยกเว้นไฟล์ตัวอย่าง .env.example)
 .env
