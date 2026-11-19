@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
+import { useBrandAssets } from "@/context/brand-context";
 import { SCHOOL_INFO } from "@/types/database";
 import {
   AlertCircle,
@@ -23,6 +24,7 @@ function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAdmin, isConfigured, signIn, enterDemoAdmin } = useAuth();
+  const { appIconUrl } = useBrandAssets();
 
   const rawRedirect = searchParams.get("redirect") || "/admin";
   const safeRedirect =
@@ -76,8 +78,22 @@ function LoginFormContent() {
       <div className="w-full max-w-md space-y-6">
         <div className="liquid-glass rounded-[2rem] shadow-glass-lg overflow-hidden">
           <div className="liquid-glass-hero running-line-bottom text-white p-7 text-center space-y-3">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-white/15 border border-white/30 flex items-center justify-center shadow-glass-pink">
-              <GraduationCap className="w-8 h-8 text-pink-200" />
+            <div
+              className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center shadow-glass-pink overflow-hidden ${
+                appIconUrl
+                  ? "bg-white/95 border border-white/60 p-1.5"
+                  : "bg-white/15 border border-white/30"
+              }`}
+            >
+              {appIconUrl ? (
+                <img
+                  src={appIconUrl}
+                  alt={SCHOOL_INFO.projectName}
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <GraduationCap className="w-8 h-8 text-pink-200" />
+              )}
             </div>
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-pink-100 text-xs font-semibold mb-2 border border-white/25">

@@ -69,6 +69,8 @@ export function promoteGradeLevel(currentGrade: string): string {
 }
 
 export async function fetchImageAsDataUri(url: string): Promise<string | null> {
+  if (!url) return null;
+  if (url.startsWith("data:")) return url;
   try {
     const res = await fetch(url);
     if (!res.ok) return null;

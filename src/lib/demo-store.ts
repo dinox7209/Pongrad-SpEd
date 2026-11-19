@@ -10,6 +10,8 @@ import {
   DEMO_WEEKLY_TASKS,
 } from "@/lib/demo-data";
 import {
+  BrandAsset,
+  DEFAULT_BRAND_ASSETS,
   MediaAsset,
   Profile,
   ResourceRoomRecord,
@@ -27,6 +29,7 @@ const KEYS = {
   tasks: "pongrad_sped_demo_tasks_v2",
   records: "pongrad_sped_demo_records_v2",
   devPlans: "pongrad_sped_demo_dev_plans_v1",
+  brandAssets: "pongrad_sped_demo_brand_assets_v1",
 };
 
 function readStore<T>(key: string, fallback: T): T {
@@ -96,4 +99,11 @@ export function getDemoDevelopmentPlans(): StudentDevelopmentPlan[] {
 }
 export function saveDemoDevelopmentPlans(plans: StudentDevelopmentPlan[]): void {
   writeStore(KEYS.devPlans, plans);
+}
+
+export function getDemoBrandAssets(): BrandAsset[] {
+  return readStore<BrandAsset[]>(KEYS.brandAssets, DEFAULT_BRAND_ASSETS);
+}
+export function saveDemoBrandAssets(assets: BrandAsset[]): void {
+  writeStore(KEYS.brandAssets, assets);
 }

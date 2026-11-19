@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
+import { useBrandAssets } from "@/context/brand-context";
 import { supabase } from "@/lib/supabase/client";
 import {
   getDemoDevelopmentPlans,
@@ -126,6 +127,7 @@ const SEMESTER_PRESETS = [
 
 export default function DevelopmentPlansPage() {
   const { isConfigured, user } = useAuth();
+  const { schoolLogoUrl, partnerLogoUrl } = useBrandAssets();
   const [plans, setPlans] = useState<StudentDevelopmentPlan[]>([]);
   const [registryStudents, setRegistryStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -637,6 +639,8 @@ export default function DevelopmentPlansPage() {
         supervisorName: options.supervisorName,
         directorName: options.directorName,
         includeSummaryCover: options.includeCover,
+        schoolLogoUrl,
+        partnerLogoUrl,
         plans: options.targetPlans,
       });
       if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);

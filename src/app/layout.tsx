@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Prompt, Sarabun } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
+import { BrandProvider } from "@/context/brand-context";
 import { SetupBanner } from "@/components/setup-banner";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -51,10 +52,12 @@ export default function RootLayout({
         </div>
 
         <AuthProvider>
-          <SetupBanner />
-          <Navbar />
-          <main className="flex-1 w-full relative">{children}</main>
-          <Footer />
+          <BrandProvider>
+            <SetupBanner />
+            <Navbar />
+            <main className="flex-1 w-full relative">{children}</main>
+            <Footer />
+          </BrandProvider>
         </AuthProvider>
       </body>
     </html>

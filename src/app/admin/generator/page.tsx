@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
+import { useBrandAssets } from "@/context/brand-context";
 import { supabase } from "@/lib/supabase/client";
 import {
   getDemoDevelopmentPlans,
@@ -119,6 +120,7 @@ function GeneratorContent() {
   const initialStudentId = searchParams.get("studentId") || "";
 
   const { isConfigured, profile } = useAuth();
+  const { schoolLogoUrl, partnerLogoUrl } = useBrandAssets();
   const [students, setStudents] = useState<Student[]>([]);
   const [allLogs, setAllLogs] = useState<StudentLog[]>([]);
   const [imageAssets, setImageAssets] = useState<MediaAsset[]>([]);
@@ -286,6 +288,8 @@ function GeneratorContent() {
         supervisorName: supervisorName || "นายเอกชัย ปลื้มใจ",
         directorName: directorName || "นางสาวอำพร คงเจริญ",
         includeSummaryCover: !isSingle,
+        schoolLogoUrl,
+        partnerLogoUrl,
         plans: targetPlans,
       });
     }

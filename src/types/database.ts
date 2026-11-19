@@ -400,3 +400,188 @@ export const SCHOOL_INFO = {
   cooperationDescription:
     "โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร) ได้จัดทำ ห้องเรียนเสริมวิชาการสู่การเรียนรวม (Resource Room) ร่วมกับศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี เพื่อดูแลและส่งเสริมศักยภาพนักเรียนที่มีความต้องการจำเป็นพิเศษในโรงเรียนเรียนรวมอย่างต่อเนื่อง",
 };
+
+export type BrandCategory =
+  | "system_icon"
+  | "school"
+  | "partner"
+  | "mou"
+  | "showcase"
+  | "custom";
+
+export type BrandPlacement =
+  | "header"
+  | "mou"
+  | "showcase"
+  | "footer"
+  | "all"
+  | "custom";
+
+export interface BrandAsset {
+  id: string;
+  slot_key: string;
+  title: string;
+  description: string;
+  category: BrandCategory;
+  placement: BrandPlacement;
+  image_url: string;
+  default_url: string;
+  display_order: number;
+  is_core: boolean;
+  is_active: boolean;
+  updated_by?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+export const BRAND_CATEGORY_META: Record<
+  BrandCategory,
+  { label: string; badgeClass: string }
+> = {
+  system_icon: {
+    label: "ไอคอนระบบ / เมนู",
+    badgeClass: "bg-purple-100 text-purple-800 border-purple-200",
+  },
+  school: {
+    label: "โลโก้โรงเรียน",
+    badgeClass: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
+  },
+  partner: {
+    label: "โลโก้ศูนย์ฯ / ภาคี",
+    badgeClass: "bg-pink-100 text-pink-800 border-pink-200",
+  },
+  mou: {
+    label: "โลโก้หน้า MOU",
+    badgeClass: "bg-amber-50 text-amber-800 border-amber-200",
+  },
+  showcase: {
+    label: "หน้าสาธารณะ",
+    badgeClass: "bg-sky-50 text-sky-700 border-sky-200",
+  },
+  custom: {
+    label: "โลโก้เพิ่มเอง",
+    badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+};
+
+export const BRAND_PLACEMENT_OPTIONS: {
+  value: BrandPlacement;
+  label: string;
+  desc: string;
+}[] = [
+  {
+    value: "mou",
+    label: "แสดงในหน้า MOU (/mou)",
+    desc: "แสดงในส่วนตราสัญลักษณ์ความร่วมมือและภาคีบนหน้า MOU",
+  },
+  {
+    value: "showcase",
+    label: "แสดงในหน้าสาธารณะ (/showcase)",
+    desc: "แสดงในส่วนภาคีความร่วมมือหรือแบนเนอร์หน้าสาธารณะ",
+  },
+  {
+    value: "footer",
+    label: "แสดงที่ส่วนท้ายเว็บไซต์ (Footer)",
+    desc: "แสดงเป็นแถบตราสัญลักษณ์หน่วยงานท้ายเว็บทุกหน้า",
+  },
+  {
+    value: "all",
+    label: "แสดงทุกหน้าสาธารณะ (MOU + Showcase + Footer)",
+    desc: "ปรากฏครบทุกหน้าสาธารณะที่รองรับตราสัญลักษณ์เพิ่มเติม",
+  },
+  {
+    value: "header",
+    label: "ส่วนหัวระบบ & แถบเมนู (Header)",
+    desc: "ใช้เป็นไอคอน/ตรากำกับส่วนหัวระบบ",
+  },
+  {
+    value: "custom",
+    label: "เก็บในคลังโลโก้ (เลือกใช้งานภายหลัง)",
+    desc: "จัดเก็บไว้ในคลังระบบหลังบ้านเพื่อสลับใช้งานได้ตลอด",
+  },
+];
+
+export const CORE_BRAND_SLOT_KEYS = [
+  "app_icon",
+  "school_logo",
+  "partner_logo",
+  "mou_seal",
+  "showcase_badge",
+] as const;
+
+export const DEFAULT_BRAND_ASSETS: BrandAsset[] = [
+  {
+    id: "brand-core-app-icon",
+    slot_key: "app_icon",
+    title: "ไอคอนระบบ & แถบเมนูด้านบน / หน้าเข้าสู่ระบบ",
+    description:
+      "แสดงที่มุมซ้ายแถบเมนูด้านบน หน้าเข้าสู่ระบบ และไอคอนแท็บเบราว์เซอร์ (ปิดไว้ = ใช้ไอคอนหมวกปริญญาเริ่มต้น)",
+    category: "system_icon",
+    placement: "header",
+    image_url: "/images/logo-wat-pongrad.png",
+    default_url: "/images/logo-wat-pongrad.png",
+    display_order: 1,
+    is_core: true,
+    is_active: false,
+    created_at: "2026-11-01T08:00:00Z",
+  },
+  {
+    id: "brand-core-school-logo",
+    slot_key: "school_logo",
+    title: "โลโก้โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร)",
+    description:
+      "ตราสัญลักษณ์หลักของสถานศึกษา แสดงบนหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และหัวรายงาน PDF",
+    category: "school",
+    placement: "all",
+    image_url: "/images/logo-wat-pongrad.png",
+    default_url: "/images/logo-wat-pongrad.png",
+    display_order: 2,
+    is_core: true,
+    is_active: true,
+    created_at: "2026-11-01T08:00:00Z",
+  },
+  {
+    id: "brand-core-partner-logo",
+    slot_key: "partner_logo",
+    title: "โลโก้ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี",
+    description:
+      "ตราสัญลักษณ์หน่วยงานร่วมดำเนินงาน แสดงบนหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และหัวรายงาน PDF",
+    category: "partner",
+    placement: "all",
+    image_url: "/images/logo-sped-chanthaburi.png",
+    default_url: "/images/logo-sped-chanthaburi.png",
+    display_order: 3,
+    is_core: true,
+    is_active: true,
+    created_at: "2026-11-01T08:00:00Z",
+  },
+  {
+    id: "brand-core-mou-seal",
+    slot_key: "mou_seal",
+    title: "ตราประทับ / โลโก้เสริมหน้าบันทึกข้อตกลง MOU",
+    description:
+      "ตราสัญลักษณ์เสริมบริเวณหัวเอกสาร MOU (เช่น ตราโครงการ หรือตรา สพฐ. เปิด/ปิดได้อิสระ)",
+    category: "mou",
+    placement: "mou",
+    image_url: "",
+    default_url: "",
+    display_order: 4,
+    is_core: true,
+    is_active: false,
+    created_at: "2026-11-01T08:00:00Z",
+  },
+  {
+    id: "brand-core-showcase-badge",
+    slot_key: "showcase_badge",
+    title: "โลโก้ / ตราโครงการประจำหน้าเผยแพร่ผลงานสาธารณะ",
+    description: "แสดงประกอบส่วนหัวหน้าเผยแพร่ผลงานสาธารณะ (/showcase)",
+    category: "showcase",
+    placement: "showcase",
+    image_url: "",
+    default_url: "",
+    display_order: 5,
+    is_core: true,
+    is_active: false,
+    created_at: "2026-11-01T08:00:00Z",
+  },
+];

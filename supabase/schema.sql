@@ -150,6 +150,26 @@ CREATE TABLE IF NOT EXISTS public.student_development_plans (
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 2.8 brand_assets (จัดการโลโก้ ไอคอนระบบ โลโก้หน้า MOU และตราสัญลักษณ์ที่เพิ่มได้)
+CREATE TABLE IF NOT EXISTS public.brand_assets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slot_key TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    category TEXT NOT NULL DEFAULT 'custom'
+        CHECK (category IN ('system_icon', 'school', 'partner', 'mou', 'showcase', 'custom')),
+    placement TEXT NOT NULL DEFAULT 'mou'
+        CHECK (placement IN ('header', 'mou', 'showcase', 'footer', 'all', 'custom')),
+    image_url TEXT NOT NULL DEFAULT '',
+    default_url TEXT NOT NULL DEFAULT '',
+    display_order INTEGER NOT NULL DEFAULT 1,
+    is_core BOOLEAN NOT NULL DEFAULT false,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- 3. Indexes
 CREATE INDEX IF NOT EXISTS idx_students_status ON public.students(current_status);
 CREATE INDEX IF NOT EXISTS idx_students_grade ON public.students(grade_level);
@@ -159,6 +179,7 @@ CREATE INDEX IF NOT EXISTS idx_media_assets_skill ON public.media_assets(skill_c
 CREATE INDEX IF NOT EXISTS idx_weekly_tasks_week_no ON public.weekly_tasks(week_number);
 CREATE INDEX IF NOT EXISTS idx_resource_room_year ON public.resource_room_records(academic_year, row_order);
 CREATE INDEX IF NOT EXISTS idx_dev_plans_year_order ON public.student_development_plans(academic_year, row_order);
+CREATE INDEX IF NOT EXISTS idx_brand_assets_order ON public.brand_assets(display_order, created_at);
 
 -- 4. Helper Functions & Triggers
 
@@ -200,6 +221,11 @@ CREATE TRIGGER trg_resource_room_records_updated_at
 DROP TRIGGER IF EXISTS trg_student_development_plans_updated_at ON public.student_development_plans;
 CREATE TRIGGER trg_student_development_plans_updated_at
   BEFORE UPDATE ON public.student_development_plans
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_brand_assets_updated_at ON public.brand_assets;
+CREATE TRIGGER trg_brand_assets_updated_at
+  BEFORE UPDATE ON public.brand_assets
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ตรวจสอบสิทธิ์ผู้ดูแลระบบ (รองรับทั้งแอดมินหลัก super_admin และผู้ดูแล admin)
@@ -534,3 +560,85 @@ CREATE POLICY "Admins manage student_development_plans"
   TO authenticated
   USING (public.is_admin(auth.uid()))
   WITH CHECK (public.is_admin(auth.uid()));
+
+-- 7.8 brand_assets:
+-- โลโก้/ตราสัญลักษณ์ที่เปิดใช้งาน (is_active = true) สาธารณะดูได้เพื่อใช้แสดงผลบน Navbar / Showcase / MOU / PDF
+ALTER TABLE public.brand_assets ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can view active brand_assets" ON public.brand_assets;
+CREATE POLICY "Public can view active brand_assets"
+  ON public.brand_assets FOR SELECT
+  USING (is_active = true OR public.is_admin(auth.uid()));
+
+DROP POLICY IF EXISTS "Admins manage brand_assets" ON public.brand_assets;
+CREATE POLICY "Admins manage brand_assets"
+  ON public.brand_assets FOR ALL
+  TO authenticated
+  USING (public.is_admin(auth.uid()))
+  WITH CHECK (public.is_admin(auth.uid()));
+
+-- 8. Seed ช่องโลโก้หลักของระบบ 5 รายการ
+INSERT INTO public.brand_assets (
+  slot_key, title, description, category, placement, image_url, default_url, display_order, is_core, is_active
+) VALUES
+  (
+    'app_icon',
+    'ไอคอนระบบ & แถบเมนูด้านบน / หน้าเข้าสู่ระบบ',
+    'แสดงที่มุมซ้ายแถบเมนูด้านบน หน้าเข้าสู่ระบบ และไอคอนแท็บเบราว์เซอร์ (ปิดไว้ = ใช้ไอคอนหมวกปริญญาเริ่มต้น)',
+    'system_icon',
+    'header',
+    '/images/logo-wat-pongrad.png',
+    '/images/logo-wat-pongrad.png',
+    1,
+    true,
+    false
+  ),
+  (
+    'school_logo',
+    'โลโก้โรงเรียนวัดโป่งแรด (ปคุณวิทยาคาร)',
+    'ตราสัญลักษณ์หลักของสถานศึกษา แสดงบนหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และหัวรายงาน PDF',
+    'school',
+    'all',
+    '/images/logo-wat-pongrad.png',
+    '/images/logo-wat-pongrad.png',
+    2,
+    true,
+    true
+  ),
+  (
+    'partner_logo',
+    'โลโก้ศูนย์การศึกษาพิเศษ ประจำจังหวัดจันทบุรี',
+    'ตราสัญลักษณ์หน่วยงานร่วมดำเนินงาน แสดงบนหน้าสาธารณะ หน้า MOU ท้ายหน้าเว็บ และหัวรายงาน PDF',
+    'partner',
+    'all',
+    '/images/logo-sped-chanthaburi.png',
+    '/images/logo-sped-chanthaburi.png',
+    3,
+    true,
+    true
+  ),
+  (
+    'mou_seal',
+    'ตราประทับ / โลโก้เสริมหน้าบันทึกข้อตกลง MOU',
+    'ตราสัญลักษณ์เสริมบริเวณหัวเอกสาร MOU (เช่น ตราโครงการ หรือตรา สพฐ. เปิด/ปิดได้อิสระ)',
+    'mou',
+    'mou',
+    '',
+    '',
+    4,
+    true,
+    false
+  ),
+  (
+    'showcase_badge',
+    'โลโก้ / ตราโครงการประจำหน้าเผยแพร่ผลงานสาธารณะ',
+    'แสดงประกอบส่วนหัวหน้าเผยแพร่ผลงานสาธารณะ (/showcase)',
+    'showcase',
+    'showcase',
+    '',
+    '',
+    5,
+    true,
+    false
+  )
+ON CONFLICT (slot_key) DO NOTHING;

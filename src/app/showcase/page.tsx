@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
+import { useBrandAssets } from "@/context/brand-context";
 import { supabase } from "@/lib/supabase/client";
 import { getDemoMedia, getDemoProfiles } from "@/lib/demo-store";
 import {
@@ -52,6 +53,13 @@ function resolvePdfPreviewSrc(asset: MediaAsset): string {
 
 export default function PublicShowcasePage() {
   const { isConfigured, isAdmin } = useAuth();
+  const {
+    schoolLogoUrl,
+    partnerLogoUrl,
+    showcaseBadgeUrl,
+    getExtraAssets,
+  } = useBrandAssets();
+  const extraShowcaseAssets = getExtraAssets("showcase");
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [publicTeam, setPublicTeam] = useState<PublicTeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -173,7 +181,15 @@ export default function PublicShowcasePage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3 flex-1 min-w-0">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md text-pink-100 text-xs font-semibold border border-white/25">
-              <Sparkles className="w-3.5 h-3.5 text-pink-200 shrink-0" />
+              {showcaseBadgeUrl ? (
+                <img
+                  src={showcaseBadgeUrl}
+                  alt="ตราโครงการ"
+                  className="w-4 h-4 rounded object-contain bg-white/90 p-0.5 shrink-0"
+                />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5 text-pink-200 shrink-0" />
+              )}
               <span className="truncate">
                 ความร่วมมือ {SCHOOL_INFO.name} × {SCHOOL_INFO.partnerName}
               </span>
@@ -251,13 +267,15 @@ export default function PublicShowcasePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="liquid-glass running-line-bottom rounded-3xl p-5 sm:p-6 space-y-3">
             <div className="flex items-start gap-3.5">
-              <div className="w-12 h-14 rounded-2xl bg-white border border-purple-100 p-1.5 flex items-center justify-center shadow-glass-pink shrink-0">
-                <img
-                  src="/images/logo-wat-pongrad.png"
-                  alt={SCHOOL_INFO.name}
-                  className="max-h-full w-auto object-contain"
-                />
-              </div>
+              {schoolLogoUrl && (
+                <div className="w-12 h-14 rounded-2xl bg-white border border-purple-100 p-1.5 flex items-center justify-center shadow-glass-pink shrink-0">
+                  <img
+                    src={schoolLogoUrl}
+                    alt={SCHOOL_INFO.name}
+                    className="max-h-full w-auto object-contain"
+                  />
+                </div>
+              )}
               <div>
                 <span className="inline-flex px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[11px] font-bold mb-1">
                   สถานศึกษาแกนนำเรียนรวม
@@ -289,13 +307,15 @@ export default function PublicShowcasePage() {
 
           <div className="liquid-glass running-line-bottom rounded-3xl p-5 sm:p-6 space-y-3">
             <div className="flex items-start gap-3.5">
-              <div className="w-12 h-14 rounded-2xl bg-white border border-pink-100 p-1.5 flex items-center justify-center shadow-glass-pink shrink-0">
-                <img
-                  src="/images/logo-sped-chanthaburi.png"
-                  alt={SCHOOL_INFO.partnerName}
-                  className="max-h-full w-auto object-contain"
-                />
-              </div>
+              {partnerLogoUrl && (
+                <div className="w-12 h-14 rounded-2xl bg-white border border-pink-100 p-1.5 flex items-center justify-center shadow-glass-pink shrink-0">
+                  <img
+                    src={partnerLogoUrl}
+                    alt={SCHOOL_INFO.partnerName}
+                    className="max-h-full w-auto object-contain"
+                  />
+                </div>
+              )}
               <div>
                 <span className="inline-flex px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-800 text-[11px] font-bold mb-1">
                   หน่วยงานความร่วมมือด้านการศึกษาพิเศษ
@@ -325,6 +345,35 @@ export default function PublicShowcasePage() {
             </div>
           </div>
         </div>
+
+        {extraShowcaseAssets.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-1">
+            {extraShowcaseAssets.map((item) => (
+              <div
+                key={item.id}
+                className="liquid-glass rounded-3xl p-4 flex items-center gap-3"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-white border border-purple-100 p-1.5 flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <div className="font-bold text-navy-950 text-xs sm:text-sm truncate">
+                    {item.title}
+                  </div>
+                  {item.description && (
+                    <div className="text-[11px] text-purple-900/70 line-clamp-2 mt-0.5">
+                      {item.description}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* แสดงรายชื่อบุคลากรเฉพาะเมื่อผู้ดูแลตั้งค่าเปิดเผยแพร่สาธารณะ (is_public = true) เท่านั้น */}

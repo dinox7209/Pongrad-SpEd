@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
+import { useBrandAssets } from "@/context/brand-context";
 import { SCHOOL_INFO } from "@/types/database";
 import {
   Sparkles,
@@ -22,12 +23,14 @@ import {
   Globe,
   Handshake,
   Layers,
+  Palette,
 } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { isAdmin, isPrimaryAdmin, profile, signOut } = useAuth();
+  const { appIconUrl } = useBrandAssets();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const publicLinks = [
@@ -43,6 +46,7 @@ export function Navbar() {
     { href: "/admin/generator", label: "เอกสาร A4", icon: FileText },
     { href: "/admin/studio", label: "สตูดิโอสื่อ", icon: Film },
     { href: "/admin/tracker", label: "20 สัปดาห์", icon: CalendarCheck2 },
+    { href: "/admin/branding", label: "โลโก้", icon: Palette },
   ];
 
   const visibleLinks = isAdmin ? [...publicLinks, ...adminLinks] : publicLinks;
@@ -62,8 +66,22 @@ export function Navbar() {
             href="/showcase"
             className="flex items-center gap-2.5 group min-w-0 shrink"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-fuchsia-400/90 via-purple-500/85 to-pink-500/90 flex items-center justify-center shadow-glass-pink border border-white/40 group-hover:scale-105 transition-transform shrink-0">
-              <GraduationCap className="w-5 h-5 text-white drop-shadow" />
+            <div
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shadow-glass-pink border group-hover:scale-105 transition-transform shrink-0 overflow-hidden ${
+                appIconUrl
+                  ? "bg-white/95 p-1 border-white/60"
+                  : "bg-gradient-to-br from-fuchsia-400/90 via-purple-500/85 to-pink-500/90 border-white/40"
+              }`}
+            >
+              {appIconUrl ? (
+                <img
+                  src={appIconUrl}
+                  alt={SCHOOL_INFO.projectName}
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <GraduationCap className="w-5 h-5 text-white drop-shadow" />
+              )}
             </div>
             <div className="min-w-0">
               <div className="font-bold text-sm sm:text-base text-white tracking-wide group-hover:text-pink-200 transition-colors whitespace-nowrap truncate">

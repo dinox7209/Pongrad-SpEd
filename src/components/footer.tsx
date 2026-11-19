@@ -3,18 +3,32 @@
 import React from "react";
 import Link from "next/link";
 import { Building2, Handshake, MapPin, Phone, School } from "lucide-react";
+import { useBrandAssets } from "@/context/brand-context";
 import { SCHOOL_INFO } from "@/types/database";
 
 export function Footer() {
+  const { schoolLogoUrl, partnerLogoUrl, getExtraAssets } = useBrandAssets();
+  const extraFooterAssets = getExtraAssets("footer");
+
   return (
     <footer className="liquid-glass-nav running-line-bottom border-t border-white/20 text-purple-100 py-8 px-4 sm:px-6 lg:px-8 mt-auto no-print">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Agency 1: School */}
           <div className="flex items-start gap-3 bg-white/10 rounded-2xl p-4 border border-white/15">
-            <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-pink-200 shrink-0">
-              <School className="w-5 h-5" />
-            </div>
+            {schoolLogoUrl ? (
+              <div className="w-11 h-12 rounded-2xl bg-white/95 border border-white/40 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                <img
+                  src={schoolLogoUrl}
+                  alt={SCHOOL_INFO.name}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-pink-200 shrink-0">
+                <School className="w-5 h-5" />
+              </div>
+            )}
             <div className="space-y-1">
               <div className="font-bold text-white text-sm sm:text-base">
                 {SCHOOL_INFO.name}
@@ -36,9 +50,19 @@ export function Footer() {
 
           {/* Agency 2: Special Education Center */}
           <div className="flex items-start gap-3 bg-white/10 rounded-2xl p-4 border border-white/15">
-            <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-pink-200 shrink-0">
-              <Building2 className="w-5 h-5" />
-            </div>
+            {partnerLogoUrl ? (
+              <div className="w-11 h-12 rounded-2xl bg-white/95 border border-white/40 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                <img
+                  src={partnerLogoUrl}
+                  alt={SCHOOL_INFO.partnerName}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-pink-200 shrink-0">
+                <Building2 className="w-5 h-5" />
+              </div>
+            )}
             <div className="space-y-1">
               <div className="font-bold text-white text-sm sm:text-base">
                 {SCHOOL_INFO.partnerName}
@@ -59,6 +83,28 @@ export function Footer() {
             </div>
           </div>
         </div>
+
+        {extraFooterAssets.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+            {extraFooterAssets.map((item) => (
+              <div
+                key={item.id}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/10 border border-white/20 text-xs text-white"
+              >
+                <div className="w-7 h-7 rounded-xl bg-white p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+                <span className="font-medium truncate max-w-[200px]">
+                  {item.title}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="pt-4 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-purple-200/85 text-center sm:text-left">
           <span>

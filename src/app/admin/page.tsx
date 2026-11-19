@@ -44,6 +44,7 @@ import {
   HeartPulse,
   Layers,
   Lock,
+  Palette,
   PlusCircle,
   School,
   ShieldCheck,
@@ -696,7 +697,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Quick Action Modules */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           href="/admin/development-plans"
           className="group liquid-glass p-5 rounded-3xl hover:-translate-y-1 hover:shadow-glass-lg transition-all"
@@ -790,6 +791,22 @@ export default function AdminDashboardPage() {
           <h2 className="font-bold text-navy-950 text-sm">ติดตามงาน 20 สัปดาห์ &amp; LINE</h2>
           <p className="text-xs text-purple-900/65 mt-1">
             สลับสถานะ Pending/Completed และแจ้งเตือนสรุปงานทุกวันศุกร์
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/branding"
+          className="group liquid-glass p-5 rounded-3xl hover:-translate-y-1 hover:shadow-glass-lg transition-all"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-700 to-pink-500 text-white flex items-center justify-center shadow-sm">
+              <Palette className="w-5 h-5" />
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-purple-400 group-hover:text-pink-600" />
+          </div>
+          <h2 className="font-bold text-navy-950 text-sm">จัดการโลโก้ &amp; ไอคอนระบบ</h2>
+          <p className="text-xs text-purple-900/65 mt-1">
+            เปลี่ยนไอคอนเว็บ โลโก้หน้า MOU และเพิ่มตราสัญลักษณ์หน่วยงานภาคี
           </p>
         </Link>
       </div>
