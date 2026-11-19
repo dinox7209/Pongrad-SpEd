@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   GraduationCap,
   Globe,
+  Handshake,
 } from "lucide-react";
 
 export function Navbar() {
@@ -30,6 +31,7 @@ export function Navbar() {
 
   const publicLinks = [
     { href: "/showcase", label: "ผลงานสาธารณะ", icon: Sparkles },
+    { href: "/mou", label: "บันทึก MOU", icon: Handshake },
   ];
 
   const adminLinks = [
@@ -87,7 +89,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-1.5 px-2 2xl:px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                     isActive
                       ? "bg-gradient-to-r from-purple-500/90 to-pink-500/90 text-white shadow-glass-pink border border-white/35"
                       : "text-purple-100 hover:bg-white/15 hover:text-white"

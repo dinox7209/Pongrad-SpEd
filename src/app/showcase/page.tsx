@@ -18,8 +18,8 @@ import {
   SKILL_CATEGORIES,
 } from "@/types/database";
 import {
+  ArrowUpRight,
   BookOpen,
-  Building2,
   Download,
   ExternalLink,
   FileText,
@@ -32,7 +32,7 @@ import {
   Newspaper,
   Phone,
   Play,
-  School,
+  ScrollText,
   Search,
   ShieldCheck,
   Sparkles,
@@ -227,21 +227,36 @@ export default function PublicShowcasePage() {
 
       {/* Section: Cooperation & Partner Agencies Contact */}
       <section className="space-y-4">
-        <div className="space-y-1.5">
-          <h2 className="text-xl font-bold text-navy-950 flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-glass-pink">
-              <Handshake className="w-4 h-4" />
-            </span>
-            <span>ความร่วมมือระหว่างสองหน่วยงานและข้อมูลติดต่อ</span>
-          </h2>
-          <div className="heading-beam-track" />
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div className="space-y-1.5">
+            <h2 className="text-xl font-bold text-navy-950 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-glass-pink">
+                <Handshake className="w-4 h-4" />
+              </span>
+              <span>ความร่วมมือระหว่างสองหน่วยงานและข้อมูลติดต่อ</span>
+            </h2>
+            <div className="heading-beam-track" />
+          </div>
+
+          <Link
+            href="/mou"
+            className="inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2 rounded-full liquid-btn-primary text-white text-xs sm:text-sm font-bold whitespace-nowrap"
+          >
+            <ScrollText className="w-4 h-4 shrink-0" />
+            <span>อ่านบันทึกข้อตกลงความร่วมมือ (MOU)</span>
+            <ArrowUpRight className="w-4 h-4 shrink-0" />
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="liquid-glass running-line-bottom rounded-3xl p-5 sm:p-6 space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-600 to-fuchsia-500 text-white flex items-center justify-center shadow-glass-pink shrink-0">
-                <School className="w-5 h-5" />
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-14 rounded-2xl bg-white border border-purple-100 p-1.5 flex items-center justify-center shadow-glass-pink shrink-0">
+                <img
+                  src="/images/logo-wat-pongrad.png"
+                  alt={SCHOOL_INFO.name}
+                  className="max-h-full w-auto object-contain"
+                />
               </div>
               <div>
                 <span className="inline-flex px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[11px] font-bold mb-1">
@@ -273,9 +288,13 @@ export default function PublicShowcasePage() {
           </div>
 
           <div className="liquid-glass running-line-bottom rounded-3xl p-5 sm:p-6 space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-fuchsia-600 to-pink-500 text-white flex items-center justify-center shadow-glass-pink shrink-0">
-                <Building2 className="w-5 h-5" />
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-14 rounded-2xl bg-white border border-pink-100 p-1.5 flex items-center justify-center shadow-glass-pink shrink-0">
+                <img
+                  src="/images/logo-sped-chanthaburi.png"
+                  alt={SCHOOL_INFO.partnerName}
+                  className="max-h-full w-auto object-contain"
+                />
               </div>
               <div>
                 <span className="inline-flex px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-800 text-[11px] font-bold mb-1">

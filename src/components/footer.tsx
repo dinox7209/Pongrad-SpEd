@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Building2, MapPin, Phone, School } from "lucide-react";
+import Link from "next/link";
+import { Building2, Handshake, MapPin, Phone, School } from "lucide-react";
 import { SCHOOL_INFO } from "@/types/database";
 
 export function Footer() {
@@ -59,13 +60,22 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-purple-200/80 text-center">
+        <div className="pt-4 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-purple-200/85 text-center sm:text-left">
           <span>
             {SCHOOL_INFO.projectName} • ความร่วมมือ {SCHOOL_INFO.name} และ {SCHOOL_INFO.partnerName}
           </span>
-          <span>
-            © 2026 All rights reserved. ข้อมูลส่วนบุคคลของนักเรียนและบุคลากรได้รับการคุ้มครอง
-          </span>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/mou"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 hover:bg-white/25 text-white font-semibold border border-white/25 transition-colors"
+            >
+              <Handshake className="w-3.5 h-3.5 text-pink-200" />
+              <span>บันทึกข้อตกลงความร่วมมือ (MOU)</span>
+            </Link>
+            <span className="text-purple-200/75">
+              © 2026 All rights reserved. ข้อมูลส่วนบุคคลได้รับการคุ้มครอง
+            </span>
+          </div>
         </div>
       </div>
     </footer>
