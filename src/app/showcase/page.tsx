@@ -164,47 +164,64 @@ export default function PublicShowcasePage() {
 
   const videoCount = assets.filter((a) => a.media_type === "video").length;
   const imageCount = assets.filter((a) => a.media_type === "image").length;
+  const hasPublicAssets = assets.length > 0;
 
   return (
-    <div className="min-h-screen py-6 sm:py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10">
+    <div className="min-h-screen py-6 sm:py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-9">
       {/* iOS 2026 Liquid Glass Hero Banner */}
-      <section className="liquid-glass-hero running-line-bottom rounded-[2rem] text-white p-7 sm:p-10 relative">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
-          <div className="space-y-3 max-w-3xl">
+      <section className="liquid-glass-hero running-line-bottom rounded-[2rem] text-white p-6 sm:p-9 relative">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-3 flex-1 min-w-0">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md text-pink-100 text-xs font-semibold border border-white/25">
-              <Sparkles className="w-3.5 h-3.5 text-pink-200" />
-              <span>
-                ความร่วมมือระหว่าง {SCHOOL_INFO.name} × {SCHOOL_INFO.partnerName}
+              <Sparkles className="w-3.5 h-3.5 text-pink-200 shrink-0" />
+              <span className="truncate">
+                ความร่วมมือ {SCHOOL_INFO.name} × {SCHOOL_INFO.partnerName}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight drop-shadow-sm">
-              {SCHOOL_INFO.projectName}
+            <h1 className="text-2xl sm:text-3xl lg:text-[2.15rem] font-extrabold tracking-tight leading-snug drop-shadow-sm">
+              ห้องเรียนเสริมวิชาการสู่การเรียนรวม{" "}
+              <span className="inline-block text-pink-200 font-bold">
+                (Resource Room)
+              </span>
             </h1>
-            <p className="text-purple-100/95 text-sm sm:text-base leading-relaxed">
+            <p className="text-purple-100/95 text-sm sm:text-base leading-relaxed max-w-3xl">
               {SCHOOL_INFO.cooperationDescription}
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 shrink-0">
-            <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl p-4 text-center shadow-inner">
-              <div className="text-2xl font-extrabold text-white">
-                {newsletters.length}
+          {hasPublicAssets ? (
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 shrink-0">
+              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl px-4 py-3.5 text-center shadow-inner min-w-[88px]">
+                <div className="text-2xl font-extrabold text-white">
+                  {newsletters.length}
+                </div>
+                <div className="text-[11px] text-pink-100 mt-0.5">วารสาร PDF</div>
               </div>
-              <div className="text-[11px] text-pink-100 mt-0.5">วารสาร PDF</div>
-            </div>
-            <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl p-4 text-center shadow-inner">
-              <div className="text-2xl font-extrabold text-white">
-                {videoCount}
+              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl px-4 py-3.5 text-center shadow-inner min-w-[88px]">
+                <div className="text-2xl font-extrabold text-white">
+                  {videoCount}
+                </div>
+                <div className="text-[11px] text-pink-100 mt-0.5">คลิปวิดีโอ</div>
               </div>
-              <div className="text-[11px] text-pink-100 mt-0.5">คลิปวิดีโอสั้น</div>
-            </div>
-            <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl p-4 text-center shadow-inner">
-              <div className="text-2xl font-extrabold text-white">
-                {imageCount}
+              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl px-4 py-3.5 text-center shadow-inner min-w-[88px]">
+                <div className="text-2xl font-extrabold text-white">
+                  {imageCount}
+                </div>
+                <div className="text-[11px] text-pink-100 mt-0.5">สื่อกิจกรรม</div>
               </div>
-              <div className="text-[11px] text-pink-100 mt-0.5">สื่อและกิจกรรม</div>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0">
+              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl px-4 py-3 text-xs sm:text-sm font-semibold text-white flex items-center gap-2">
+                <Handshake className="w-4 h-4 text-pink-200 shrink-0" />
+                <span>ความร่วมมือ 2 หน่วยงานจังหวัดจันทบุรี</span>
+              </div>
+              <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl px-4 py-3 text-xs sm:text-sm font-semibold text-pink-100 flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 text-pink-200 shrink-0" />
+                <span>ส่งเสริมผู้เรียนเรียนรวม อ.1 – ป.6</span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -369,8 +386,29 @@ export default function PublicShowcasePage() {
             ))}
           </div>
         ) : newsletters.length === 0 ? (
-          <div className="liquid-glass rounded-3xl p-8 text-center text-sm text-purple-900/60">
-            ยังไม่มีวารสารประจำสัปดาห์ที่เปิดเผยแพร่สาธารณะ
+          <div className="liquid-glass rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <div className="w-11 h-11 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                <Newspaper className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-navy-950">
+                  กำลังเตรียมจัดทำวารสารประชาสัมพันธ์ฉบับใหม่
+                </div>
+                <p className="text-xs text-purple-900/65">
+                  วารสารข่าวและสรุปกิจกรรมประจำสัปดาห์ที่เปิดเผยแพร่สาธารณะจะแสดงในส่วนนี้
+                </p>
+              </div>
+            </div>
+            {isAdmin && (
+              <Link
+                href="/admin/generator"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full liquid-btn-primary text-white text-xs font-semibold shrink-0"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>สร้างวารสาร A4</span>
+              </Link>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -527,22 +565,42 @@ export default function PublicShowcasePage() {
             ))}
           </div>
         ) : galleryAssets.length === 0 ? (
-          <div className="liquid-glass rounded-3xl p-12 text-center space-y-2">
-            <p className="font-semibold text-navy-900 text-sm">
-              ไม่พบสื่อหรือผลงานที่ตรงกับตัวกรองที่เลือก
+          <div className="liquid-glass rounded-3xl p-9 text-center space-y-3">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 text-pink-600 flex items-center justify-center">
+              <Film className="w-6 h-6" />
+            </div>
+            <p className="font-bold text-navy-950 text-sm">
+              {assets.length === 0
+                ? "ยังไม่มีสื่อกิจกรรมที่เปิดเผยแพร่สาธารณะในขณะนี้"
+                : "ไม่พบสื่อหรือผลงานที่ตรงกับตัวกรองที่เลือก"}
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedGrade("all");
-                setSelectedSkill("all");
-                setSelectedType("all");
-              }}
-              className="text-xs font-semibold text-pink-600 hover:underline cursor-pointer"
-            >
-              ล้างตัวกรองทั้งหมด
-            </button>
+            <p className="text-xs text-purple-900/65 max-w-md mx-auto">
+              {assets.length === 0
+                ? "สื่อการสอน คลิปวิดีโอสั้น และเอกสารที่ได้รับอนุญาตให้เผยแพร่จะแสดงที่นี่เมื่อเจ้าหน้าที่อัปโหลดเข้าระบบ"
+                : "ลองเปลี่ยนตัวกรองระดับชั้นหรือประเภททักษะด้านบน"}
+            </p>
+            {assets.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedGrade("all");
+                  setSelectedSkill("all");
+                  setSelectedType("all");
+                }}
+                className="text-xs font-semibold text-pink-600 hover:underline cursor-pointer"
+              >
+                ล้างตัวกรองทั้งหมด
+              </button>
+            ) : isAdmin ? (
+              <Link
+                href="/admin/studio"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full liquid-btn-primary text-white text-xs font-semibold"
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>ไปอัปโหลดสื่อ / ตัดต่อคลิป</span>
+              </Link>
+            ) : null}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
