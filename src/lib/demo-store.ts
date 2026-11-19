@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  DEMO_DEVELOPMENT_PLANS,
   DEMO_MEDIA_ASSETS,
   DEMO_PROFILES,
   DEMO_RESOURCE_RECORDS,
@@ -8,7 +9,15 @@ import {
   DEMO_STUDENTS,
   DEMO_WEEKLY_TASKS,
 } from "@/lib/demo-data";
-import { MediaAsset, Profile, ResourceRoomRecord, Student, StudentLog, WeeklyTask } from "@/types/database";
+import {
+  MediaAsset,
+  Profile,
+  ResourceRoomRecord,
+  Student,
+  StudentDevelopmentPlan,
+  StudentLog,
+  WeeklyTask,
+} from "@/types/database";
 
 const KEYS = {
   profiles: "pongrad_sped_demo_profiles_v2",
@@ -17,6 +26,7 @@ const KEYS = {
   media: "pongrad_sped_demo_media_v2",
   tasks: "pongrad_sped_demo_tasks_v2",
   records: "pongrad_sped_demo_records_v2",
+  devPlans: "pongrad_sped_demo_dev_plans_v1",
 };
 
 function readStore<T>(key: string, fallback: T): T {
@@ -79,4 +89,11 @@ export function getDemoResourceRecords(): ResourceRoomRecord[] {
 }
 export function saveDemoResourceRecords(records: ResourceRoomRecord[]): void {
   writeStore(KEYS.records, records);
+}
+
+export function getDemoDevelopmentPlans(): StudentDevelopmentPlan[] {
+  return readStore<StudentDevelopmentPlan[]>(KEYS.devPlans, DEMO_DEVELOPMENT_PLANS);
+}
+export function saveDemoDevelopmentPlans(plans: StudentDevelopmentPlan[]): void {
+  writeStore(KEYS.devPlans, plans);
 }

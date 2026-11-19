@@ -135,6 +135,166 @@ export interface ResourceRoomRecord {
   updated_at?: string;
 }
 
+export type DevelopmentSkillKey =
+  | "thai"
+  | "math"
+  | "sci"
+  | "social"
+  | "english"
+  | "history"
+  | "health"
+  | "art"
+  | "career"
+  | "antiCorruption";
+
+export type DevelopmentSkills = Record<DevelopmentSkillKey, string>;
+
+export type DevelopmentProgressStatus =
+  | "กำลังดำเนินการ"
+  | "พัฒนาขึ้นตามเป้าหมาย"
+  | "ผ่านเกณฑ์แผน"
+  | "ต้องติดตามใกล้ชิด";
+
+export interface StudentDevelopmentPlan {
+  id: string;
+  academic_year: string;
+  semester_label: string;
+  row_order: number;
+  student_id?: string | null;
+  full_name: string;
+  nickname: string;
+  gender: GenderType;
+  age_years?: number | null;
+  grade_level: string;
+  disability_type?: string | null;
+  homeroom_teacher: string;
+  skills: Partial<DevelopmentSkills> & Record<string, string>;
+  progress_status: DevelopmentProgressStatus;
+  overall_summary: string;
+  notes?: string | null;
+  updated_by?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+export const DEV_PLAN_BASE_YEAR = 2569;
+
+export const DEVELOPMENT_SUBJECTS: {
+  key: DevelopmentSkillKey;
+  indexThai: string;
+  name: string;
+  shortName: string;
+  placeholder: string;
+  accentClass: string;
+}[] = [
+  {
+    key: "thai",
+    indexThai: "๑",
+    name: "กลุ่มสาระฯ ภาษาไทย",
+    shortName: "ภาษาไทย",
+    placeholder: "เช่น สามารถเขียนพยัญชนะ ก - ฮ และอ่านออกเสียงคำพื้นฐานได้...",
+    accentClass: "text-purple-700 bg-purple-50 border-purple-100",
+  },
+  {
+    key: "math",
+    indexThai: "๒",
+    name: "กลุ่มสาระฯ คณิตศาสตร์",
+    shortName: "คณิตศาสตร์",
+    placeholder: "เช่น สามารถนับจำนวน อ่านและเขียนตัวเลข 1 - 50 ได้ถูกต้อง...",
+    accentClass: "text-pink-700 bg-pink-50 border-pink-100",
+  },
+  {
+    key: "sci",
+    indexThai: "๓",
+    name: "กลุ่มสาระฯ วิทยาศาสตร์และเทคโนโลยี",
+    shortName: "วิทยาศาสตร์ฯ",
+    placeholder: "เช่น สามารถบอกชื่อพืชและสัตว์ หรือสิ่งที่จำเป็นต่อการดำรงชีวิต...",
+    accentClass: "text-emerald-700 bg-emerald-50 border-emerald-100",
+  },
+  {
+    key: "social",
+    indexThai: "๔",
+    name: "กลุ่มสาระฯ สังคมศึกษา ศาสนาและวัฒนธรรม",
+    shortName: "สังคมศึกษาฯ",
+    placeholder: "เช่น สามารถปฏิบัติตามกฎ ระเบียบ ของห้องเรียนและโรงเรียนได้...",
+    accentClass: "text-amber-700 bg-amber-50 border-amber-100",
+  },
+  {
+    key: "english",
+    indexThai: "๕",
+    name: "กลุ่มสาระฯ ภาษาอังกฤษ",
+    shortName: "ภาษาอังกฤษ",
+    placeholder: "เช่น สามารถออกเสียงพยัญชนะ A - Z หรือปฏิบัติตามคำสั่งง่ายๆ ได้...",
+    accentClass: "text-sky-700 bg-sky-50 border-sky-100",
+  },
+  {
+    key: "history",
+    indexThai: "๖",
+    name: "กลุ่มสาระฯ ประวัติศาสตร์",
+    shortName: "ประวัติศาสตร์",
+    placeholder: "เช่น สามารถบอกวัน เดือน ปี หรือเรียงลำดับเหตุการณ์ในชีวิตประจำวัน...",
+    accentClass: "text-indigo-700 bg-indigo-50 border-indigo-100",
+  },
+  {
+    key: "health",
+    indexThai: "๗",
+    name: "กลุ่มสาระฯ สุขศึกษาและพลศึกษา",
+    shortName: "สุขศึกษาฯ",
+    placeholder: "เช่น สามารถรู้จักและบอกหน้าที่ของอวัยวะในร่างกายได้...",
+    accentClass: "text-rose-700 bg-rose-50 border-rose-100",
+  },
+  {
+    key: "art",
+    indexThai: "๘",
+    name: "กลุ่มสาระฯ ศิลปะ",
+    shortName: "ศิลปะ",
+    placeholder: "เช่น สามารถบอก อธิบาย หรือวาดรูปร่าง รูปทรงต่างๆ ได้...",
+    accentClass: "text-fuchsia-700 bg-fuchsia-50 border-fuchsia-100",
+  },
+  {
+    key: "career",
+    indexThai: "๙",
+    name: "กลุ่มสาระฯ การงานอาชีพ",
+    shortName: "การงานอาชีพ",
+    placeholder: "เช่น สามารถทำความสะอาดโต๊ะเรียนหรือบอกประโยชน์เครื่องใช้ได้...",
+    accentClass: "text-violet-700 bg-violet-50 border-violet-100",
+  },
+  {
+    key: "antiCorruption",
+    indexThai: "๑๐",
+    name: "สาระเพิ่มเติม การป้องกันการทุจริต",
+    shortName: "ป้องกันทุจริต",
+    placeholder: "เช่น สามารถดูแลทรัพย์สินของตนเองและส่วนรวม เข้าใจกฎกติกา...",
+    accentClass: "text-teal-700 bg-teal-50 border-teal-100",
+  },
+];
+
+export const DEVELOPMENT_PROGRESS_META: Record<
+  DevelopmentProgressStatus,
+  { label: string; badgeClass: string; dotClass: string }
+> = {
+  กำลังดำเนินการ: {
+    label: "กำลังดำเนินการ",
+    badgeClass: "bg-purple-50 text-purple-800 border-purple-200",
+    dotClass: "bg-purple-500",
+  },
+  พัฒนาขึ้นตามเป้าหมาย: {
+    label: "พัฒนาขึ้นตามเป้าหมาย",
+    badgeClass: "bg-sky-50 text-sky-700 border-sky-200",
+    dotClass: "bg-sky-500",
+  },
+  ผ่านเกณฑ์แผน: {
+    label: "ผ่านเกณฑ์แผน",
+    badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    dotClass: "bg-emerald-500",
+  },
+  ต้องติดตามใกล้ชิด: {
+    label: "ต้องติดตามใกล้ชิด",
+    badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
+    dotClass: "bg-rose-500",
+  },
+};
+
 export const INFORMATION_GRADE_LEVELS = [
   "อ.1",
   "อ.2",

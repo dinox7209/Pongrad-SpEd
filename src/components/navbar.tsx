@@ -21,6 +21,7 @@ import {
   GraduationCap,
   Globe,
   Handshake,
+  Layers,
 } from "lucide-react";
 
 export function Navbar() {
@@ -37,6 +38,7 @@ export function Navbar() {
   const adminLinks = [
     { href: "/admin", label: "แดชบอร์ด", icon: LayoutDashboard },
     { href: "/admin/information", label: "สารสนเทศ", icon: ClipboardList },
+    { href: "/admin/development-plans", label: "แผน 10 สาระ", icon: Layers },
     { href: "/admin/students", label: "นักเรียน", icon: Users },
     { href: "/admin/generator", label: "เอกสาร A4", icon: FileText },
     { href: "/admin/studio", label: "สตูดิโอสื่อ", icon: Film },
@@ -70,7 +72,7 @@ export function Navbar() {
                   (Resource Room)
                 </span>
               </div>
-              <div className="text-[11px] text-purple-200/90 truncate max-w-[210px] sm:max-w-[260px]">
+              <div className="text-[11px] text-purple-200/90 truncate max-w-[180px] 2xl:max-w-[240px]">
                 รร.วัดโป่งแรด × ศูนย์การศึกษาพิเศษ จันทบุรี
               </div>
             </div>
@@ -89,7 +91,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 px-2 2xl:px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-1 px-1.5 2xl:px-2.5 py-1.5 rounded-xl text-[11px] 2xl:text-xs font-semibold whitespace-nowrap transition-all ${
                     isActive
                       ? "bg-gradient-to-r from-purple-500/90 to-pink-500/90 text-white shadow-glass-pink border border-white/35"
                       : "text-purple-100 hover:bg-white/15 hover:text-white"

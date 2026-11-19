@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase/client";
 import {
+  getDemoDevelopmentPlans,
   getDemoLogs,
   getDemoMedia,
   getDemoProfiles,
@@ -15,11 +16,13 @@ import {
 } from "@/lib/demo-store";
 import { formatDateThai } from "@/lib/utils";
 import {
+  DEV_PLAN_BASE_YEAR,
   MediaAsset,
   Profile,
   ResourceRoomRecord,
   SCHOOL_INFO,
   Student,
+  StudentDevelopmentPlan,
   STUDENT_STATUS_META,
   StudentLog,
   WeeklyTask,
@@ -39,6 +42,7 @@ import {
   FolderOpen,
   Globe,
   HeartPulse,
+  Layers,
   Lock,
   PlusCircle,
   School,
@@ -55,6 +59,7 @@ export default function AdminDashboardPage() {
   const [tasks, setTasks] = useState<WeeklyTask[]>([]);
   const [teamProfiles, setTeamProfiles] = useState<Profile[]>([]);
   const [records, setRecords] = useState<ResourceRoomRecord[]>([]);
+  const [devPlans, setDevPlans] = useState<StudentDevelopmentPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -62,7 +67,7 @@ export default function AdminDashboardPage() {
       setLoading(true);
       try {
         if (isConfigured) {
-          const [stRes, logRes, mediaRes, taskRes, profRes, recRes] = await Promise.all([
+          const [stRes, logRes, mediaRes, taskRes, profRes, recRes, planRes] = await Promise.all([
             supabase.from("students").select("*").order("created_at", { ascending: false }),
             supabase
               .from("student_logs")
@@ -77,6 +82,12 @@ export default function AdminDashboardPage() {
               .select("*")
               .order("academic_year", { ascending: true })
               .order("row_order", { ascending: true }),
+            supabase
+              .from("student_development_plans")
+              .select("*")
+              .gte("academic_year", String(DEV_PLAN_BASE_YEAR))
+              .order("academic_year", { ascending: true })
+              .order("row_order", { ascending: true }),
           ]);
 
           setStudents((stRes.data as Student[]) || []);
@@ -85,6 +96,9 @@ export default function AdminDashboardPage() {
           setTasks((taskRes.data as WeeklyTask[]) || []);
           setTeamProfiles((profRes.data as Profile[]) || []);
           setRecords(!recRes.error && recRes.data ? (recRes.data as ResourceRoomRecord[]) : []);
+          setDevPlans(
+            !planRes.error && planRes.data ? (planRes.data as StudentDevelopmentPlan[]) : []
+          );
         } else {
           const demoStudents = getDemoStudents();
           const studentMap = new Map(demoStudents.map((s) => [s.id, s]));
@@ -98,6 +112,7 @@ export default function AdminDashboardPage() {
           setTasks(getDemoTasks());
           setTeamProfiles(getDemoProfiles());
           setRecords(getDemoResourceRecords());
+          setDevPlans(getDemoDevelopmentPlans());
         }
       } catch (err) {
         console.error("Failed to load admin dashboard:", err);
@@ -236,6 +251,37 @@ export default function AdminDashboardPage() {
         };
       });
   }, [records]);
+
+  const devPlanSummary = useMemo(() => {
+    const grouped = new Map<string, StudentDevelopmentPlan[]>();
+    for (const plan of devPlans) {
+      if (Number(plan.academic_year) < DEV_PLAN_BASE_YEAR) continue;
+      const list = grouped.get(plan.academic_year);
+      if (list) list.push(plan);
+      else grouped.set(plan.academic_year, [plan]);
+    }
+    return Array.from(grouped.entries())
+      .sort(([a], [b]) => b.localeCompare(a, "th"))
+      .map(([year, items]) => {
+        const gradeCounts = Array.from(
+          items.reduce((m, item) => {
+            m.set(item.grade_level, (m.get(item.grade_level) || 0) + 1);
+            return m;
+          }, new Map<string, number>())
+        );
+        const completedCount = items.filter(
+          (i) =>
+            i.progress_status === "พัฒนาขึ้นตามเป้าหมาย" ||
+            i.progress_status === "ผ่านเกณฑ์แผน"
+        ).length;
+        return {
+          year,
+          total: items.length,
+          gradeCounts,
+          completedCount,
+        };
+      });
+  }, [devPlans]);
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 space-y-8 max-w-7xl mx-auto">
@@ -567,8 +613,106 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
+      {/* แผนผังในการพัฒนาผู้เรียนรายบุคคล (10 กลุ่มสาระ • ปีการศึกษา 2569 เป็นต้นไป) */}
+      <div className="liquid-glass rounded-3xl p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1.5">
+            <h2 className="font-bold text-navy-950 flex items-center gap-2">
+              <Layers className="w-5 h-5 text-pink-600" />
+              <span>
+                แผนผังในการพัฒนาผู้เรียนรายบุคคล (10 กลุ่มสาระ • ปี 2569 → อนาคต)
+              </span>
+            </h2>
+            <div className="heading-beam-track" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-900 text-xs font-semibold border border-pink-200">
+              {devPlanSummary.length} ปีการศึกษา • รวม {devPlans.length} แผน
+            </span>
+            <Link
+              href="/admin/development-plans"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold shadow-glass-pink hover:scale-[1.02] transition-transform"
+            >
+              <span>เปิดกรอกข้อมูล / พิมพ์ PDF รายงาน</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {devPlanSummary.length === 0 ? (
+          <div className="p-6 text-center bg-white/65 rounded-2xl border border-purple-200/70 space-y-2">
+            <p className="text-sm font-semibold text-navy-950">
+              ยังไม่มีข้อมูลแผนผังพัฒนาผู้เรียน 10 กลุ่มสาระในฐานข้อมูล
+            </p>
+            <p className="text-xs text-purple-900/70">
+              กด &ldquo;เปิดกรอกข้อมูล / พิมพ์ PDF รายงาน&rdquo; เพื่อเริ่มบันทึกแผนปี 2569+ หรือรันไฟล์ SQL ตั้งต้นใน Supabase
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {devPlanSummary.map((item) => (
+              <div
+                key={item.year}
+                className="bg-white/75 rounded-2xl border border-purple-200/80 p-4 sm:p-5 flex flex-col justify-between gap-3 hover:border-pink-400 transition-colors"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white text-xs font-bold">
+                      ปีการศึกษา {item.year}
+                    </span>
+                    <span className="text-lg font-extrabold text-navy-950">
+                      {item.total} คน
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5 text-[11px]">
+                    {item.gradeCounts.map(([grade, count]) => (
+                      <span
+                        key={grade}
+                        className="px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-950 font-semibold"
+                      >
+                        {grade}: {count} คน
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2.5 border-t border-purple-100 flex items-center justify-between text-xs">
+                  <span className="text-purple-900/75">
+                    ประเมินก้าวหน้าแล้ว {item.completedCount}/{item.total} คน
+                  </span>
+                  <Link
+                    href="/admin/development-plans"
+                    className="font-bold text-pink-600 hover:underline flex items-center gap-0.5 shrink-0"
+                  >
+                    <span>กรอก / PDF</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Quick Action Modules */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <Link
+          href="/admin/development-plans"
+          className="group liquid-glass p-5 rounded-3xl hover:-translate-y-1 hover:shadow-glass-lg transition-all"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-fuchsia-600 text-white flex items-center justify-center shadow-sm">
+              <Layers className="w-5 h-5" />
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-purple-400 group-hover:text-pink-600" />
+          </div>
+          <h2 className="font-bold text-navy-950 text-sm">แผนพัฒนา 10 กลุ่มสาระ</h2>
+          <p className="text-xs text-purple-900/65 mt-1">
+            กรอกแผนปี 2569+ ล่วงหน้า และสร้างรายงาน PDF รายคน / ทั้งห้อง
+          </p>
+        </Link>
+
         <Link
           href="/admin/information"
           className="group liquid-glass p-5 rounded-3xl hover:-translate-y-1 hover:shadow-glass-lg transition-all"

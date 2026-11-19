@@ -126,6 +126,30 @@ CREATE TABLE IF NOT EXISTS public.resource_room_records (
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 2.7 student_development_plans (แผนผังในการพัฒนาผู้เรียนรายบุคคล 10 กลุ่มสาระ ตั้งแต่ปีการศึกษา 2569 เป็นต้นไป)
+CREATE TABLE IF NOT EXISTS public.student_development_plans (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    academic_year TEXT NOT NULL DEFAULT '2569',
+    semester_label TEXT NOT NULL DEFAULT 'ตลอดปีการศึกษา',
+    row_order INTEGER NOT NULL DEFAULT 1,
+    student_id UUID REFERENCES public.students(id) ON DELETE SET NULL,
+    full_name TEXT NOT NULL,
+    nickname TEXT NOT NULL DEFAULT '',
+    gender TEXT NOT NULL DEFAULT 'ชาย' CHECK (gender IN ('ชาย', 'หญิง')),
+    age_years INTEGER,
+    grade_level TEXT NOT NULL,
+    disability_type TEXT DEFAULT '',
+    homeroom_teacher TEXT NOT NULL DEFAULT 'นางสาวดวงพร หวังอ้อมกลาง',
+    skills JSONB NOT NULL DEFAULT '{}'::jsonb,
+    progress_status TEXT NOT NULL DEFAULT 'กำลังดำเนินการ'
+        CHECK (progress_status IN ('กำลังดำเนินการ', 'พัฒนาขึ้นตามเป้าหมาย', 'ผ่านเกณฑ์แผน', 'ต้องติดตามใกล้ชิด')),
+    overall_summary TEXT NOT NULL DEFAULT '',
+    notes TEXT DEFAULT '',
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- 3. Indexes
 CREATE INDEX IF NOT EXISTS idx_students_status ON public.students(current_status);
 CREATE INDEX IF NOT EXISTS idx_students_grade ON public.students(grade_level);
@@ -134,6 +158,7 @@ CREATE INDEX IF NOT EXISTS idx_media_assets_public ON public.media_assets(is_pub
 CREATE INDEX IF NOT EXISTS idx_media_assets_skill ON public.media_assets(skill_category, grade_level);
 CREATE INDEX IF NOT EXISTS idx_weekly_tasks_week_no ON public.weekly_tasks(week_number);
 CREATE INDEX IF NOT EXISTS idx_resource_room_year ON public.resource_room_records(academic_year, row_order);
+CREATE INDEX IF NOT EXISTS idx_dev_plans_year_order ON public.student_development_plans(academic_year, row_order);
 
 -- 4. Helper Functions & Triggers
 
@@ -170,6 +195,11 @@ CREATE TRIGGER trg_weekly_tasks_updated_at
 DROP TRIGGER IF EXISTS trg_resource_room_records_updated_at ON public.resource_room_records;
 CREATE TRIGGER trg_resource_room_records_updated_at
   BEFORE UPDATE ON public.resource_room_records
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_student_development_plans_updated_at ON public.student_development_plans;
+CREATE TRIGGER trg_student_development_plans_updated_at
+  BEFORE UPDATE ON public.student_development_plans
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ตรวจสอบสิทธิ์ผู้ดูแลระบบ (รองรับทั้งแอดมินหลัก super_admin และผู้ดูแล admin)
@@ -490,6 +520,17 @@ REVOKE ALL ON public.resource_room_records FROM anon;
 DROP POLICY IF EXISTS "Admins manage resource_room_records" ON public.resource_room_records;
 CREATE POLICY "Admins manage resource_room_records"
   ON public.resource_room_records FOR ALL
+  TO authenticated
+  USING (public.is_admin(auth.uid()))
+  WITH CHECK (public.is_admin(auth.uid()));
+
+-- 7.7 student_development_plans: เฉพาะ Admin 2 ท่านเท่านั้น (ปกป้องข้อมูลแผนพัฒนารายบุคคล 10 กลุ่มสาระ)
+ALTER TABLE public.student_development_plans ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.student_development_plans FROM anon;
+
+DROP POLICY IF EXISTS "Admins manage student_development_plans" ON public.student_development_plans;
+CREATE POLICY "Admins manage student_development_plans"
+  ON public.student_development_plans FOR ALL
   TO authenticated
   USING (public.is_admin(auth.uid()))
   WITH CHECK (public.is_admin(auth.uid()));

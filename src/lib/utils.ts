@@ -59,3 +59,27 @@ export function isDemoDriveId(fileId?: string | null): boolean {
 export function getMediaStreamUrl(driveFileId: string): string {
   return `/api/drive/stream/${encodeURIComponent(driveFileId)}`;
 }
+
+export function promoteGradeLevel(currentGrade: string): string {
+  const order = ["อ.1", "อ.2", "อ.3", "ป.1", "ป.2", "ป.3", "ป.4", "ป.5", "ป.6"];
+  const idx = order.indexOf(currentGrade);
+  if (idx === -1) return currentGrade;
+  if (idx >= order.length - 1) return "ป.6";
+  return order[idx + 1];
+}
+
+export async function fetchImageAsDataUri(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Failed to read image blob"));
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
